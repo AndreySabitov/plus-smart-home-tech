@@ -13,7 +13,7 @@ import ru.practicum.collector.events.hub.device.DeviceRemovedEvent;
 import ru.practicum.collector.events.hub.scenario.ScenarioAddedEvent;
 import ru.practicum.collector.events.hub.scenario.ScenarioRemovedEvent;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -32,7 +32,7 @@ import java.time.LocalDateTime;
 public abstract class HubEvent {
     @NotBlank
     String hubId;
-    final LocalDateTime timestamp = LocalDateTime.now();
+    final Instant timestamp = Instant.now();
 
     @NotNull
     public abstract HubEventType getType();

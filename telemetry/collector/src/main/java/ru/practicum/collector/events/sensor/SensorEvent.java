@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.collector.enums.sensor.SensorEventType;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 @JsonTypeInfo(
         use = JsonTypeInfo.Id.NAME,
@@ -31,7 +31,7 @@ public abstract class SensorEvent {
     String id;
     @NotBlank
     String hubId;
-    final LocalDateTime timestamp = LocalDateTime.now();
+    final Instant timestamp = Instant.now();
 
     @NotNull
     public abstract SensorEventType getType();
