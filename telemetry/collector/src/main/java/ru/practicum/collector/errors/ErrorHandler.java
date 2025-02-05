@@ -1,13 +1,12 @@
 package ru.practicum.collector.errors;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import ru.practicum.serializer.SerializationException;
 
 @RestControllerAdvice
-@Slf4j
 public class ErrorHandler {
 
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)

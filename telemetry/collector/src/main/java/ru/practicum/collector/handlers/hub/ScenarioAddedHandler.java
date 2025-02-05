@@ -1,29 +1,35 @@
-package ru.practicum.collector.mapper;
+package ru.practicum.collector.handlers.hub;
 
-import lombok.experimental.UtilityClass;
-import ru.practicum.collector.enums.hub.DeviceType;
+import org.apache.avro.specific.SpecificRecordBase;
+import org.springframework.stereotype.Component;
+import ru.practicum.collector.events.hub.HubEvent;
 import ru.practicum.collector.events.hub.scenario.DeviceAction;
+import ru.practicum.collector.events.hub.scenario.ScenarioAddedEvent;
 import ru.practicum.collector.events.hub.scenario.ScenarioCondition;
+import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.util.List;
 
-@UtilityClass
-public class AvroMapper {
-    public DeviceTypeAvro mapToDeviceTypeAvro(DeviceType deviceType) {
-        DeviceTypeAvro type = null;
-
-        switch (deviceType) {
-            case LIGHT_SENSOR -> type = DeviceTypeAvro.LIGHT_SENSOR;
-            case MOTION_SENSOR -> type = DeviceTypeAvro.MOTION_SENSOR;
-            case SWITCH_SENSOR -> type = DeviceTypeAvro.SWITCH_SENSOR;
-            case CLIMATE_SENSOR -> type = DeviceTypeAvro.CLIMATE_SENSOR;
-            case TEMPERATURE_SENSOR -> type = DeviceTypeAvro.TEMPERATURE_SENSOR;
-        }
-        return type;
+@Component
+public class ScenarioAddedHandler extends BaseHubHandler {
+    public ScenarioAddedHandler(KafkaEventProducer producer) {
+        super(producer);
     }
 
-    public List<ScenarioConditionAvro> mapToConditionTypeAvro(List<ScenarioCondition> conditions) {
+    @Override
+    public SpecificRecordBase toAvro(HubEvent hubEvent) {
+        ScenarioAddedEvent event = (ScenarioAddedEvent) hubEvent;
+
+        return HubEventAvro.newBuilder()
+                .setHubId(hubEvent.getHubId())
+                .setTimestamp(hubEvent.getTimestamp())
+                .setPayload(new ScenarioAddedEventAvro(event.getName(), mapToConditionTypeAvro(event.getConditions()),
+                        mapToDeviceActionAvro(event.getActions())))
+                .build();
+    }
+
+    private List<ScenarioConditionAvro> mapToConditionTypeAvro(List<ScenarioCondition> conditions) {
         return conditions.stream()
                 .map(c -> ScenarioConditionAvro.newBuilder()
                         .setSensorId(c.getSensorId())
@@ -48,7 +54,7 @@ public class AvroMapper {
                 .toList();
     }
 
-    public List<DeviceActionAvro> mapToDeviceActionAvro(List<DeviceAction> deviceActions) {
+    private List<DeviceActionAvro> mapToDeviceActionAvro(List<DeviceAction> deviceActions) {
         return deviceActions.stream()
                 .map(da -> DeviceActionAvro.newBuilder()
                         .setSensorId(da.getSensorId())
