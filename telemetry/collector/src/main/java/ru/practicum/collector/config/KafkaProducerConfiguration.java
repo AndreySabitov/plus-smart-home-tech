@@ -1,4 +1,4 @@
-package ru.practicum.collector.producer;
+package ru.practicum.collector.config;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.KafkaProducer;
@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import java.util.Properties;
 
 @Configuration
-public class CollectorProducerConfiguration {
+public class KafkaProducerConfiguration {
     @Value("${spring.kafka.producer.bootstrap-servers}")
     private String bootstrapServers;
     @Value("${spring.kafka.producer.key-serializer}")

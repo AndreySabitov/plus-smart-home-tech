@@ -1,9 +1,10 @@
-package ru.practicum.collector.handlers.hub;
+package ru.practicum.collector.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.practicum.collector.enums.hub.HubEventType;
+import ru.practicum.collector.handlers.hub.*;
 
 import java.util.HashMap;
 import java.util.Map;
