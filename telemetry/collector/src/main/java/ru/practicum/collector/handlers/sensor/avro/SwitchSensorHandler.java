@@ -1,28 +1,28 @@
-package ru.practicum.collector.handlers.sensor;
+package ru.practicum.collector.handlers.sensor.avro;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.events.sensor.SensorEvent;
-import ru.practicum.collector.events.sensor.TemperatureSensorEvent;
+import ru.practicum.collector.events.sensor.SwitchSensorEvent;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.TemperatureSensorAvro;
+import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 
 @Component
-public class TemperatureSensorHandler extends BaseSensorHandler {
-    public TemperatureSensorHandler(KafkaEventProducer producer) {
+public class SwitchSensorHandler extends BaseSensorHandler {
+    public SwitchSensorHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
     public SpecificRecordBase toAvro(SensorEvent sensorEvent) {
-        TemperatureSensorEvent event = (TemperatureSensorEvent) sensorEvent;
+        SwitchSensorEvent event = (SwitchSensorEvent) sensorEvent;
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(sensorEvent.getTimestamp())
-                .setPayload(new TemperatureSensorAvro(event.getTemperatureC(), event.getTemperatureF()))
+                .setPayload(new SwitchSensorAvro(event.getState()))
                 .build();
     }
 }

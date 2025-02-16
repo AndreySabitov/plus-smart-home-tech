@@ -1,28 +1,28 @@
-package ru.practicum.collector.handlers.sensor;
+package ru.practicum.collector.handlers.sensor.avro;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
+import ru.practicum.collector.events.sensor.MotionSensorEvent;
 import ru.practicum.collector.events.sensor.SensorEvent;
-import ru.practicum.collector.events.sensor.SwitchSensorEvent;
 import ru.practicum.collector.producer.KafkaEventProducer;
+import ru.yandex.practicum.kafka.telemetry.event.MotionSensorAvro;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.SwitchSensorAvro;
 
 @Component
-public class SwitchSensorHandler extends BaseSensorHandler {
-    public SwitchSensorHandler(KafkaEventProducer producer) {
+public class MotionSensorHandler extends BaseSensorHandler {
+    public MotionSensorHandler(KafkaEventProducer producer) {
         super(producer);
     }
 
     @Override
     public SpecificRecordBase toAvro(SensorEvent sensorEvent) {
-        SwitchSensorEvent event = (SwitchSensorEvent) sensorEvent;
+        MotionSensorEvent event = (MotionSensorEvent) sensorEvent;
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(sensorEvent.getTimestamp())
-                .setPayload(new SwitchSensorAvro(event.getState()))
+                .setPayload(new MotionSensorAvro(event.getLinkQuality(), event.getMotion(), event.getVoltage()))
                 .build();
     }
 }
