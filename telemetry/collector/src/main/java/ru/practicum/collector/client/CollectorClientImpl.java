@@ -7,7 +7,7 @@ import ru.practicum.collector.enums.hub.HubEventType;
 import ru.practicum.collector.enums.sensor.SensorEventType;
 import ru.practicum.collector.events.hub.HubEvent;
 import ru.practicum.collector.events.sensor.SensorEvent;
-import ru.practicum.collector.handlers.hub.HubEventHandler;
+import ru.practicum.collector.handlers.hub.avro.HubEventHandler;
 import ru.practicum.collector.handlers.sensor.avro.SensorEventHandler;
 
 import java.util.Map;
