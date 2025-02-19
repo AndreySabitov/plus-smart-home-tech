@@ -1,4 +1,4 @@
-package ru.practicum.collector.handlers.hub.proto;
+package ru.practicum.collector.handlers.hub;
 
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
 
