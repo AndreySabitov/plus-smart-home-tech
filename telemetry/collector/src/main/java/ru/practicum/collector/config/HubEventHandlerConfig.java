@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.practicum.collector.enums.hub.HubEventType;
-import ru.practicum.collector.handlers.hub.*;
+import ru.practicum.collector.handlers.hub.avro.*;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -1,4 +1,4 @@
-package ru.practicum.collector.handlers.sensor;
+package ru.practicum.collector.handlers.sensor.avro;
 
 import ru.practicum.collector.events.sensor.SensorEvent;
 

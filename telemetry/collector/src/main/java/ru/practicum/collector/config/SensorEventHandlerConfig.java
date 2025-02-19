@@ -4,7 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import ru.practicum.collector.enums.sensor.SensorEventType;
-import ru.practicum.collector.handlers.sensor.*;
+import ru.practicum.collector.handlers.sensor.avro.*;
 
 import java.util.HashMap;
 import java.util.Map;

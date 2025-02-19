@@ -1,4 +1,4 @@
-package ru.practicum.collector.handlers.hub;
+package ru.practicum.collector.handlers.hub.avro;
 
 import lombok.RequiredArgsConstructor;
 import org.apache.avro.specific.SpecificRecordBase;

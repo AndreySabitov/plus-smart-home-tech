@@ -1,4 +1,4 @@
-package ru.practicum.collector.handlers.sensor;
+package ru.practicum.collector.handlers.sensor.avro;
 
 import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
