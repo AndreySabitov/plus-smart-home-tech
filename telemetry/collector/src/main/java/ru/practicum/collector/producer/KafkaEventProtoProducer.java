@@ -2,7 +2,6 @@ package ru.practicum.collector.producer;
 
 import com.google.protobuf.GeneratedMessageV3;
 import lombok.RequiredArgsConstructor;
-import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.springframework.stereotype.Component;
@@ -24,7 +23,7 @@ public class KafkaEventProtoProducer implements AutoCloseable {
     }
 
     @Override
-    public void close() throws Exception {
+    public void close() {
         producerProto.flush();
         producerProto.close(Duration.ofSeconds(10));
     }

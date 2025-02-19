@@ -8,7 +8,6 @@ import org.apache.kafka.clients.producer.ProducerConfig;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.practicum.serializer.CollectorProtoSerializer;
 
 import java.util.Properties;
 
@@ -20,6 +19,8 @@ public class KafkaProducerConfiguration {
     private String keySerializer;
     @Value("${spring.kafka.producer.value-serializer}")
     private String valueSerializer;
+    @Value("${spring.kafka.producer.proto-serializer}")
+    private String protoSerializer;
 
     @Bean
     public Producer<String, SpecificRecordBase> getProducer() {
@@ -36,7 +37,7 @@ public class KafkaProducerConfiguration {
         Properties config = new Properties();
         config.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         config.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, keySerializer);
-        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, CollectorProtoSerializer.class);
+        config.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, protoSerializer);
 
         return new KafkaProducer<>(config);
     }

@@ -1,4 +1,4 @@
-package ru.practicum.collector.grpc_service;
+package ru.practicum.collector.controller;
 
 import com.google.protobuf.Empty;
 import io.grpc.Status;
@@ -34,13 +34,14 @@ public class EventController extends CollectorControllerGrpc.CollectorController
 
     @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
-        log.info("Получили сообщение датчика типа {}", request.getPayloadCase());
+        SensorEventProto.PayloadCase sensorEventType = request.getPayloadCase();
+        log.info("Получили сообщение датчика типа {}", sensorEventType);
         try {
-            if (sensorEventHandlers.containsKey(request.getPayloadCase())) {
+            if (sensorEventHandlers.containsKey(sensorEventType)) {
                 log.info("Отправляем сообщение на обработку");
-                sensorEventHandlers.get(request.getPayloadCase()).handle(request);
+                sensorEventHandlers.get(sensorEventType).handle(request);
             } else {
-                throw new IllegalArgumentException("Не могу найти обработчик для события " + request.getPayloadCase());
+                throw new IllegalArgumentException("Не могу найти обработчик для события " + sensorEventType);
             }
 
             responseObserver.onNext(Empty.getDefaultInstance());
@@ -52,13 +53,14 @@ public class EventController extends CollectorControllerGrpc.CollectorController
 
     @Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
-        log.info("Получили сообщение хаба типа: {}", request.getPayloadCase());
+        HubEventProto.PayloadCase hubEventType = request.getPayloadCase();
+        log.info("Получили сообщение хаба типа: {}", hubEventType);
         try {
-            if (hubEventHandlers.containsKey(request.getPayloadCase())) {
+            if (hubEventHandlers.containsKey(hubEventType)) {
                 log.info("Отправляем сообщение на обработку");
-                hubEventHandlers.get(request.getPayloadCase()).handle(request);
+                hubEventHandlers.get(hubEventType).handle(request);
             } else {
-                throw new IllegalArgumentException("Не могу найти обработчик для события " + request.getPayloadCase());
+                throw new IllegalArgumentException("Не могу найти обработчик для события " + hubEventType);
             }
 
             responseObserver.onNext(Empty.getDefaultInstance());
