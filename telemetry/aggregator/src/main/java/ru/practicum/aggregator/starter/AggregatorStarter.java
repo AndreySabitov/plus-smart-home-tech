@@ -3,9 +3,9 @@ package ru.practicum.aggregator.starter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.avro.specific.SpecificRecordBase;
+import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
-import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.errors.WakeupException;
@@ -23,15 +23,17 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class AggregatorStarter {
-    private final KafkaConsumer<String, SpecificRecordBase> consumer;
+    private final Consumer<String, SpecificRecordBase> consumer;
     private final SensorEventHandler eventHandler;
     private final Producer<String, SpecificRecordBase> producer;
     @Value("${aggregator.topic.telemetry-snapshots}")
-    private String topic;
+    private String snapshotsTopic;
+    @Value("${topic.telemetry-sensors}")
+    private String sensorsTopic;
 
     public void start() {
         try {
-            consumer.subscribe(List.of("telemetry.sensors.v1"));
+            consumer.subscribe(List.of(sensorsTopic));
 
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
@@ -45,11 +47,10 @@ public class AggregatorStarter {
                     log.info("Получили снимок состояния {}", snapshot);
                     if (snapshot.isPresent()) {
                         log.info("запись снимка в топик Kafka");
-                        ProducerRecord<String, SpecificRecordBase> message = new ProducerRecord<>(topic, null,
-                                event.getTimestamp().toEpochMilli(), event.getHubId(), snapshot.get());
+                        ProducerRecord<String, SpecificRecordBase> message = new ProducerRecord<>(snapshotsTopic,
+                                null, event.getTimestamp().toEpochMilli(), event.getHubId(), snapshot.get());
 
                         producer.send(message);
-                        producer.flush();
                     }
                 }
                 consumer.commitSync();
@@ -59,11 +60,12 @@ public class AggregatorStarter {
             log.error("Ошибка во время обработки событий от датчиков", e);
         } finally {
             try {
-                consumer.commitSync();
                 producer.flush();
+                consumer.commitSync();
             } finally {
                 log.info("Закрываем консьюмер");
-                consumer.close(Duration.ofSeconds(10));
+                consumer.close();
+                log.info("Закрываем продюсер");
                 producer.close(Duration.ofSeconds(10));
             }
         }
