@@ -23,7 +23,7 @@ import java.util.Optional;
 @Component
 @RequiredArgsConstructor
 public class AggregatorStarter {
-    private final Consumer<String, SpecificRecordBase> consumer;
+    private final Consumer<String, SensorEventAvro> consumer;
     private final SensorEventHandler eventHandler;
     private final Producer<String, SpecificRecordBase> producer;
     @Value("${aggregator.topic.telemetry-snapshots}")
@@ -38,11 +38,11 @@ public class AggregatorStarter {
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             while (true) {
-                ConsumerRecords<String, SpecificRecordBase> records = consumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords<String, SensorEventAvro> records = consumer.poll(Duration.ofMillis(1000));
 
-                for (ConsumerRecord<String, SpecificRecordBase> record : records) {
+                for (ConsumerRecord<String, SensorEventAvro> record : records) {
                     log.info("обрабатываем сообщение {}", record.value());
-                    SensorEventAvro event = (SensorEventAvro) record.value();
+                    SensorEventAvro event = record.value();
                     Optional<SensorsSnapshotAvro> snapshot = eventHandler.updateState(event);
                     log.info("Получили снимок состояния {}", snapshot);
                     if (snapshot.isPresent()) {

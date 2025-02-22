@@ -1,0 +1,7 @@
+package ru.practicum.analyzer.enums;
+
+public enum HubEventType {
+    DEVICE_ADDED,
+    DEVICE_REMOVED,
+    SCENARIO_ADDED
+}
