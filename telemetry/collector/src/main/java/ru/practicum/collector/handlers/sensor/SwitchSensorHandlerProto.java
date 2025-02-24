@@ -20,7 +20,7 @@ public class SwitchSensorHandlerProto extends BaseSensorHandlerProto {
     }
 
     @Override
-    public SpecificRecordBase toAvro(SensorEventProto sensorEvent) {
+    public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
         SwitchSensorProto switchSensor = sensorEvent.getSwitchSensorEvent();
 
         return SensorEventAvro.newBuilder()

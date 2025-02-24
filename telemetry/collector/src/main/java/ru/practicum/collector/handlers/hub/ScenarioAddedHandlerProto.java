@@ -23,7 +23,7 @@ public class ScenarioAddedHandlerProto extends BaseHubEventHandlerProto {
     }
 
     @Override
-    public SpecificRecordBase toAvro(HubEventProto hubEvent) {
+    public HubEventAvro toAvro(HubEventProto hubEvent) {
         ScenarioAddedEventProto scenarioAddedEvent = hubEvent.getScenarioAdded();
 
         return HubEventAvro.newBuilder()

@@ -22,7 +22,7 @@ public class DeviceAddedHandlerProto extends BaseHubEventHandlerProto {
     }
 
     @Override
-    public SpecificRecordBase toAvro(HubEventProto hubEvent) {
+    public HubEventAvro toAvro(HubEventProto hubEvent) {
         DeviceAddedEventProto deviceAddedEvent = hubEvent.getDeviceAdded();
 
         return HubEventAvro.newBuilder()
