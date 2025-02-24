@@ -27,8 +27,11 @@ public class ClimateSensorHandlerProto extends BaseSensorHandlerProto {
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(mapTimestampToInstant(sensorEvent))
-                .setPayload(new ClimateSensorAvro(climateSensor.getTemperatureC(), climateSensor.getHumidity(),
-                        climateSensor.getCo2Level()))
+                .setPayload(ClimateSensorAvro.newBuilder()
+                        .setTemperatureC(climateSensor.getTemperatureC())
+                        .setHumidity(climateSensor.getHumidity())
+                        .setCo2Level(climateSensor.getCo2Level())
+                        .build())
                 .build();
     }
 }

@@ -27,8 +27,10 @@ public class TemperatureSensorHandlerProto extends BaseSensorHandlerProto {
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(mapTimestampToInstant(sensorEvent))
-                .setPayload(new TemperatureSensorAvro(temperatureSensor.getTemperatureC(),
-                        temperatureSensor.getTemperatureF()))
+                .setPayload(TemperatureSensorAvro.newBuilder()
+                        .setTemperatureC(temperatureSensor.getTemperatureC())
+                        .setTemperatureF(temperatureSensor.getTemperatureF())
+                        .build())
                 .build();
     }
 }

@@ -1,6 +1,5 @@
 package ru.practicum.collector.handlers.sensor;
 
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.MotionSensorProto;
@@ -27,8 +26,11 @@ public class MotionSensorHandlerProto extends BaseSensorHandlerProto {
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(mapTimestampToInstant(sensorEvent))
-                .setPayload(new MotionSensorAvro(motionSensor.getLinkQuality(), motionSensor.getMotion(),
-                        motionSensor.getVoltage()))
+                .setPayload(MotionSensorAvro.newBuilder()
+                        .setMotion(motionSensor.getMotion())
+                        .setLinkQuality(motionSensor.getLinkQuality())
+                        .setVoltage(motionSensor.getVoltage())
+                        .build())
                 .build();
     }
 }

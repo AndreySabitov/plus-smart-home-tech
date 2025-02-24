@@ -27,7 +27,9 @@ public class SwitchSensorHandlerProto extends BaseSensorHandlerProto {
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
                 .setTimestamp(mapTimestampToInstant(sensorEvent))
-                .setPayload(new SwitchSensorAvro(switchSensor.getState()))
+                .setPayload(SwitchSensorAvro.newBuilder()
+                        .setState(switchSensor.getState())
+                        .build())
                 .build();
     }
 }
