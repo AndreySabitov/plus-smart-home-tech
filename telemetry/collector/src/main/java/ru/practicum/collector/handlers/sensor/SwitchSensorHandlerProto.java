@@ -1,6 +1,5 @@
 package ru.practicum.collector.handlers.sensor;
 
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
@@ -16,12 +15,12 @@ public class SwitchSensorHandlerProto extends BaseSensorHandlerProto {
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
-        return SensorEventProto.PayloadCase.SWITCH_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.SWITCH_SENSOR;
     }
 
     @Override
     public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
-        SwitchSensorProto switchSensor = sensorEvent.getSwitchSensorEvent();
+        SwitchSensorProto switchSensor = sensorEvent.getSwitchSensor();
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())

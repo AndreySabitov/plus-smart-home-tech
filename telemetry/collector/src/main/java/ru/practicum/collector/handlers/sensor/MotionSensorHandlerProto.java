@@ -15,12 +15,12 @@ public class MotionSensorHandlerProto extends BaseSensorHandlerProto {
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
-        return SensorEventProto.PayloadCase.MOTION_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.MOTION_SENSOR;
     }
 
     @Override
     public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
-        MotionSensorProto motionSensor = sensorEvent.getMotionSensorEvent();
+        MotionSensorProto motionSensor = sensorEvent.getMotionSensor();
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())

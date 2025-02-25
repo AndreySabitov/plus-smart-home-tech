@@ -15,12 +15,12 @@ public class LightSensorHandlerProto extends BaseSensorHandlerProto {
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
-        return SensorEventProto.PayloadCase.LIGHT_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.LIGHT_SENSOR;
     }
 
     @Override
     public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
-        LightSensorProto lightSensor = sensorEvent.getLightSensorEvent();
+        LightSensorProto lightSensor = sensorEvent.getLightSensor();
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())

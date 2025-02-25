@@ -1,6 +1,5 @@
 package ru.practicum.collector.handlers.sensor;
 
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.ClimateSensorProto;
@@ -16,12 +15,12 @@ public class ClimateSensorHandlerProto extends BaseSensorHandlerProto {
 
     @Override
     public SensorEventProto.PayloadCase getMessageType() {
-        return SensorEventProto.PayloadCase.CLIMATE_SENSOR_EVENT;
+        return SensorEventProto.PayloadCase.CLIMATE_SENSOR;
     }
 
     @Override
     public SensorEventAvro toAvro(SensorEventProto sensorEvent) {
-        ClimateSensorProto climateSensor = sensorEvent.getClimateSensorEvent();
+        ClimateSensorProto climateSensor = sensorEvent.getClimateSensor();
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
