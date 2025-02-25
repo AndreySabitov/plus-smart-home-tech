@@ -43,11 +43,10 @@ public class ScenarioAddedHandler implements HubEventHandler {
     private Scenario mapToScenario(HubEventAvro event) {
         ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) event.getPayload();
 
-        Scenario scenario = Scenario.builder()
+        return Scenario.builder()
                 .name(scenarioAddedEvent.getName())
                 .hubId(event.getHubId())
                 .build();
-        return scenario;
     }
 
     private Set<Condition> mapToCondition(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
@@ -57,7 +56,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .scenario(scenario)
                         .type(c.getType())
                         .operation(c.getOperation())
-                        .value((Integer) c.getValue()) // тут может быть boolean
+                        .value(setValue(c.getValue()))
                         .build())
                 .collect(Collectors.toSet());
     }
@@ -71,5 +70,18 @@ public class ScenarioAddedHandler implements HubEventHandler {
                         .value(action.getValue())
                         .build())
                 .collect(Collectors.toSet());
+    }
+
+    private Integer setValue(Object value) {
+        if (value instanceof Integer) {
+            return (Integer) value;
+        } else if (value instanceof Boolean) {
+            if ((Boolean) value) {
+                return 1;
+            } else {
+                return 0;
+            }
+        }
+        return null;
     }
 }
