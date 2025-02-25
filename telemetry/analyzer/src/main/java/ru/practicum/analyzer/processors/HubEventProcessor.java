@@ -10,10 +10,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.analyzer.enums.HubEventType;
 import ru.practicum.analyzer.handlers.HubEventHandler;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
-import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
+import ru.practicum.analyzer.handlers.ScenarioRemovedHandler;
+import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Duration;
 import java.util.List;
@@ -70,6 +68,8 @@ public class HubEventProcessor implements Runnable {
             type = HubEventType.DEVICE_REMOVED;
         } else if (payloadName.equals(ScenarioAddedEventAvro.getClassSchema().getName())) {
             type = HubEventType.SCENARIO_ADDED;
+        } else if (payloadName.equals(ScenarioRemovedEventAvro.getClassSchema().getName())) {
+            type = HubEventType.SCENARIO_REMOVED;
         }
         return type;
     }
