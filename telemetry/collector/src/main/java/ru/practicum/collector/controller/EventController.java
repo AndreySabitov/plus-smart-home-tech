@@ -35,7 +35,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     @Override
     public void collectSensorEvent(SensorEventProto request, StreamObserver<Empty> responseObserver) {
         SensorEventProto.PayloadCase sensorEventType = request.getPayloadCase();
-        log.info("Получили сообщение датчика типа {}", sensorEventType);
+        log.info("Получили сообщение датчика {}", request);
         try {
             if (sensorEventHandlers.containsKey(sensorEventType)) {
                 log.info("Отправляем сообщение на обработку");
