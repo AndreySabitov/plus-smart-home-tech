@@ -1,15 +1,14 @@
 package ru.practicum.analyzer.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 
 @Entity
 @Table(name = "actions")
+@SecondaryTable(name = "scenario_actions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "action_id"))
 @Getter
+@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
@@ -22,4 +21,12 @@ public class Action {
     private ActionTypeAvro type;
 
     private Integer value;
+
+    @ManyToOne
+    @JoinColumn(name = "scenario_id", table = "scenario_actions")
+    private Scenario scenario;
+
+    @ManyToOne
+    @JoinColumn(name = "sensor_id", table = "scenario_actions")
+    private Sensor sensor;
 }

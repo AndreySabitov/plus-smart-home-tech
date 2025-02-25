@@ -19,5 +19,6 @@ public class Scenario {
 
     @Column(name = "hub_id")
     private String hubId;
+
     private String name;
 }

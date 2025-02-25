@@ -1,18 +1,17 @@
 package ru.practicum.analyzer.model;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
 @Entity
 @Table(name = "conditions")
+@SecondaryTable(name = "scenario_conditions", pkJoinColumns = @PrimaryKeyJoinColumn(name = "condition_id"))
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @Builder
 public class Condition {
     @Id
@@ -26,4 +25,12 @@ public class Condition {
     private ConditionOperationAvro operation;
 
     private Integer value;
+
+    @ManyToOne
+    @JoinColumn(name = "scenario_id", table = "scenario_conditions")
+    private Scenario scenario;
+
+    @ManyToOne
+    @JoinColumn(name = "sensor_id", table = "scenario_conditions")
+    private Sensor sensor;
 }
