@@ -5,6 +5,7 @@ import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.beans.factory.annotation.Value;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Instant;
 
@@ -16,13 +17,12 @@ public abstract class BaseHubEventHandlerProto implements HubEventHandlerProto {
 
     @Override
     public void handle(HubEventProto event) {
-        producer.send(toAvro(event), event.getHubId(),
-                Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos()), topic);
+        producer.send(toAvro(event), event.getHubId(), mapTimestampToInstant(event), topic);
     }
 
     public Instant mapTimestampToInstant(HubEventProto event) {
         return Instant.ofEpochSecond(event.getTimestamp().getSeconds(), event.getTimestamp().getNanos());
     }
 
-    public abstract SpecificRecordBase toAvro(HubEventProto hubEvent);
+    public abstract HubEventAvro toAvro(HubEventProto hubEvent);
 }
