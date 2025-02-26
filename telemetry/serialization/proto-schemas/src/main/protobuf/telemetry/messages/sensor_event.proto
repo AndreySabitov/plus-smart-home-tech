@@ -20,28 +20,28 @@ message SensorEventProto {
     }
 }
 
-message MotionSensorEvent {
+message MotionSensorProto {
   int32 link_quality = 1;
   bool motion = 2;
   int32 voltage = 3;
 }
 
-message TemperatureSensorEvent {
+message TemperatureSensorProto {
   int32 temperature_c = 1;
   int32 temperature_f = 2;
 }
 
-message LightSensorEvent {
+message LightSensorProto {
   int32 link_quality = 1;
   int32 luminosity = 2;
 }
 
-message ClimateSensorEvent {
+message ClimateSensorProto {
   int32 temperature_c = 1;
   int32 humidity = 3;
   int32 co2_level = 5;
 }
 
-message SwitchSensorEvent {
+message SwitchSensorProto {
   bool state = 1;
 }
