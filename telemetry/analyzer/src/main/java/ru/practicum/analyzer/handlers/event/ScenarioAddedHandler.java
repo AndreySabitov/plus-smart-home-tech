@@ -1,4 +1,4 @@
-package ru.practicum.analyzer.handlers;
+package ru.practicum.analyzer.handlers.event;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;

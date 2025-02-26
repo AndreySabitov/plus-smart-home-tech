@@ -9,8 +9,7 @@ import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.practicum.analyzer.enums.HubEventType;
-import ru.practicum.analyzer.handlers.HubEventHandler;
-import ru.practicum.analyzer.handlers.ScenarioRemovedHandler;
+import ru.practicum.analyzer.handlers.event.HubEventHandler;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.time.Duration;
