@@ -1,10 +1,9 @@
 package ru.practicum.analyzer.client;
 
 import com.google.protobuf.Timestamp;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.devh.boot.grpc.client.inject.GrpcClient;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.practicum.analyzer.model.Action;
 import ru.yandex.practicum.grpc.telemetry.event.ActionTypeProto;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
@@ -15,11 +14,14 @@ import ru.yandex.practicum.kafka.telemetry.event.ActionTypeAvro;
 import java.time.Instant;
 
 @Slf4j
-@Component
-@RequiredArgsConstructor
+@Service
 public class ScenarioActionProducer {
-    @GrpcClient("hub-router")
     private final HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterStub;
+
+    public ScenarioActionProducer(
+            @GrpcClient("hub-router") HubRouterControllerGrpc.HubRouterControllerBlockingStub hubRouterStub) {
+        this.hubRouterStub = hubRouterStub;
+    }
 
     public void sendAction(Action action) {
         DeviceActionRequest actionRequest = mapToActionRequest(action);
