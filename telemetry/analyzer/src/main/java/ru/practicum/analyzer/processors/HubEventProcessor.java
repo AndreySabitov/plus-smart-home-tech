@@ -8,11 +8,13 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import ru.practicum.analyzer.handlers.event.HubEventHandler;
 import ru.practicum.analyzer.handlers.event.HubEventHandlers;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @Component
@@ -29,6 +31,7 @@ public class HubEventProcessor implements Runnable {
         try {
             consumer.subscribe(List.of(topic));
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+            Map<String, HubEventHandler> handlerMap = handlers.getHandlers();
 
             while (true) {
 
@@ -39,7 +42,11 @@ public class HubEventProcessor implements Runnable {
                     String payloadName = event.getPayload().getClass().getSimpleName();
                     log.info("Получили сообщение хаба типа: {}", payloadName);
 
-                    handlers.getHandlers().get(payloadName).handle(event);
+                    if (handlerMap.containsKey(payloadName)) {
+                        handlerMap.get(payloadName).handle(event);
+                    } else {
+                        throw new IllegalArgumentException("Не могу найти обработчик для события " + event);
+                    }
                 }
 
                 consumer.commitSync();
