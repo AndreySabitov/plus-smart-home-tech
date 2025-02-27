@@ -1,12 +1,12 @@
 package ru.practicum.aggregator.config;
 
 import lombok.RequiredArgsConstructor;
-import org.apache.avro.specific.SpecificRecordBase;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
+import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 
 import java.util.Properties;
 
@@ -16,7 +16,7 @@ public class KafkaConsumerConfiguration {
     private final Environment env;
 
     @Bean
-    public KafkaConsumer<String, SpecificRecordBase> getConsumer() {
+    public KafkaConsumer<String, SensorEventAvro> getConsumer() {
         Properties config = new Properties();
         config.put(ConsumerConfig.CLIENT_ID_CONFIG, env.getProperty("spring.kafka.consumer.client-id"));
         config.put(ConsumerConfig.GROUP_ID_CONFIG, env.getProperty("spring.kafka.consumer.group-id"));
