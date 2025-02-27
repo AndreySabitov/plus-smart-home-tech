@@ -53,7 +53,7 @@ public class SnapshotHandler {
                 return handleOperation(condition, lightSensor.getLuminosity());
             }
             case TEMPERATURE -> {
-                TemperatureSensorAvro temperatureSensor = (TemperatureSensorAvro) sensorState.getData();
+                ClimateSensorAvro temperatureSensor = (ClimateSensorAvro) sensorState.getData();
                 return handleOperation(condition, temperatureSensor.getTemperatureC());
             }
             case MOTION -> {
