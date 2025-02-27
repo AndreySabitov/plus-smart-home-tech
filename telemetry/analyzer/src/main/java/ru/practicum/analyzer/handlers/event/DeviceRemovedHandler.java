@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.analyzer.enums.HubEventType;
 import ru.practicum.analyzer.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceRemovedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
@@ -24,7 +23,7 @@ public class DeviceRemovedHandler implements HubEventHandler {
     }
 
     @Override
-    public HubEventType getPayloadType() {
-        return HubEventType.DEVICE_REMOVED;
+    public String getPayloadType() {
+        return DeviceRemovedEventAvro.class.getSimpleName();
     }
 }

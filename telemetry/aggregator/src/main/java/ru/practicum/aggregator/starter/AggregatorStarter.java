@@ -41,8 +41,8 @@ public class AggregatorStarter {
                 ConsumerRecords<String, SensorEventAvro> records = consumer.poll(Duration.ofMillis(1000));
 
                 for (ConsumerRecord<String, SensorEventAvro> record : records) {
-                    log.info("обрабатываем сообщение {}", record.value());
                     SensorEventAvro event = record.value();
+                    log.info("обрабатываем сообщение датчика {}", event);
                     Optional<SensorsSnapshotAvro> snapshot = eventHandler.updateState(event);
                     log.info("Получили снимок состояния {}", snapshot);
                     if (snapshot.isPresent()) {

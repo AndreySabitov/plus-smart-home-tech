@@ -8,20 +8,18 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.common.errors.WakeupException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import ru.practicum.analyzer.enums.HubEventType;
-import ru.practicum.analyzer.handlers.event.HubEventHandler;
-import ru.yandex.practicum.kafka.telemetry.event.*;
+import ru.practicum.analyzer.handlers.event.HubEventHandlers;
+import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 
 import java.time.Duration;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
 @RequiredArgsConstructor
 public class HubEventProcessor implements Runnable {
     private final Consumer<String, HubEventAvro> consumer;
-    private final Map<HubEventType, HubEventHandler> handlers;
+    private final HubEventHandlers handlers;
     @Value("${topic.hub-event-topic}")
     private String topic;
 
@@ -40,9 +38,8 @@ public class HubEventProcessor implements Runnable {
                     HubEventAvro event = record.value();
                     String payloadName = event.getPayload().getClass().getSimpleName();
                     log.info("Получили сообщение хаба типа: {}", payloadName);
-                    HubEventType type = getHubEventType(payloadName);
 
-                    handlers.get(type).handle(event);
+                    handlers.getHandlers().get(payloadName).handle(event);
                 }
 
                 consumer.commitSync();
@@ -57,19 +54,5 @@ public class HubEventProcessor implements Runnable {
                 consumer.close();
             }
         }
-    }
-
-    private HubEventType getHubEventType(String payloadName) {
-        HubEventType type = null;
-        if (payloadName.equals(DeviceAddedEventAvro.getClassSchema().getName())) {
-            type = HubEventType.DEVICE_ADDED;
-        } else if (payloadName.equals(DeviceRemovedEventAvro.getClassSchema().getName())) {
-            type = HubEventType.DEVICE_REMOVED;
-        } else if (payloadName.equals(ScenarioAddedEventAvro.getClassSchema().getName())) {
-            type = HubEventType.SCENARIO_ADDED;
-        } else if (payloadName.equals(ScenarioRemovedEventAvro.getClassSchema().getName())) {
-            type = HubEventType.SCENARIO_REMOVED;
-        }
-        return type;
     }
 }

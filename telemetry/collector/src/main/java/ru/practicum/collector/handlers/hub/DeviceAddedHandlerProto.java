@@ -1,6 +1,5 @@
 package ru.practicum.collector.handlers.hub;
 
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceAddedEventProto;
@@ -34,16 +33,13 @@ public class DeviceAddedHandlerProto extends BaseHubEventHandlerProto {
     }
 
     private DeviceTypeAvro mapToDeviceTypeAvro(DeviceTypeProto deviceTypeProto) {
-        DeviceTypeAvro type = null;
-
-        switch (deviceTypeProto) {
-            case LIGHT_SENSOR -> type = DeviceTypeAvro.LIGHT_SENSOR;
-            case MOTION_SENSOR -> type = DeviceTypeAvro.MOTION_SENSOR;
-            case SWITCH_SENSOR -> type = DeviceTypeAvro.SWITCH_SENSOR;
-            case CLIMATE_SENSOR -> type = DeviceTypeAvro.CLIMATE_SENSOR;
-            case TEMPERATURE_SENSOR -> type = DeviceTypeAvro.TEMPERATURE_SENSOR;
-        }
-
-        return type;
+        return switch (deviceTypeProto) {
+            case LIGHT_SENSOR -> DeviceTypeAvro.LIGHT_SENSOR;
+            case MOTION_SENSOR -> DeviceTypeAvro.MOTION_SENSOR;
+            case SWITCH_SENSOR -> DeviceTypeAvro.SWITCH_SENSOR;
+            case CLIMATE_SENSOR -> DeviceTypeAvro.CLIMATE_SENSOR;
+            case TEMPERATURE_SENSOR -> DeviceTypeAvro.TEMPERATURE_SENSOR;
+            case UNRECOGNIZED -> null;
+        };
     }
 }

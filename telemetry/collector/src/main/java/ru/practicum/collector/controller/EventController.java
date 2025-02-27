@@ -54,7 +54,7 @@ public class EventController extends CollectorControllerGrpc.CollectorController
     @Override
     public void collectHubEvent(HubEventProto request, StreamObserver<Empty> responseObserver) {
         HubEventProto.PayloadCase hubEventType = request.getPayloadCase();
-        log.info("Получили сообщение хаба типа: {}", hubEventType);
+        log.info("Получили сообщение хаба: {}", request);
         try {
             if (hubEventHandlers.containsKey(hubEventType)) {
                 log.info("Отправляем сообщение на обработку");

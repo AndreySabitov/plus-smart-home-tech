@@ -44,6 +44,7 @@ public class ScenarioActionProducer {
     }
 
     private ActionTypeProto mapActionType(ActionTypeAvro actionType) {
+        log.info("мапим тип действия {}", actionType);
         return switch (actionType) {
             case ACTIVATE -> ActionTypeProto.ACTIVATE;
             case DEACTIVATE -> ActionTypeProto.DEACTIVATE;

@@ -4,7 +4,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.analyzer.enums.HubEventType;
 import ru.practicum.analyzer.model.Sensor;
 import ru.practicum.analyzer.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceAddedEventAvro;
@@ -24,8 +23,8 @@ public class DeviceAddedHandler implements HubEventHandler {
     }
 
     @Override
-    public HubEventType getPayloadType() {
-        return HubEventType.DEVICE_ADDED;
+    public String getPayloadType() {
+        return DeviceAddedEventAvro.class.getSimpleName();
     }
 
     private Sensor mapToSensor(HubEventAvro event) {

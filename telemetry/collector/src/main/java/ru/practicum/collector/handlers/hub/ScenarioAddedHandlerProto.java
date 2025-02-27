@@ -1,6 +1,5 @@
 package ru.practicum.collector.handlers.hub;
 
-import org.apache.avro.specific.SpecificRecordBase;
 import org.springframework.stereotype.Component;
 import ru.practicum.collector.producer.KafkaEventProducer;
 import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;

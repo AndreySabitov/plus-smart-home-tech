@@ -1,9 +1,9 @@
 package ru.practicum.analyzer.handlers.event;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.analyzer.enums.HubEventType;
 import ru.practicum.analyzer.model.Action;
 import ru.practicum.analyzer.model.Condition;
 import ru.practicum.analyzer.model.Scenario;
@@ -11,12 +11,16 @@ import ru.practicum.analyzer.repository.ActionRepository;
 import ru.practicum.analyzer.repository.ConditionRepository;
 import ru.practicum.analyzer.repository.ScenarioRepository;
 import ru.practicum.analyzer.repository.SensorRepository;
+import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
 import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
+import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class ScenarioAddedHandler implements HubEventHandler {
@@ -30,14 +34,33 @@ public class ScenarioAddedHandler implements HubEventHandler {
     public void handle(HubEventAvro event) {
         ScenarioAddedEventAvro scenarioAddedEvent = (ScenarioAddedEventAvro) event.getPayload();
 
-        Scenario scenario = scenarioRepository.save(mapToScenario(event));
-        conditionRepository.saveAll(mapToCondition(scenarioAddedEvent, scenario));
-        actionRepository.saveAll(mapToAction(scenarioAddedEvent, scenario));
+        Optional<Scenario> scenarioOpt = scenarioRepository.findByHubIdAndName(event.getHubId(),
+                scenarioAddedEvent.getName());
+
+        if (scenarioOpt.isEmpty()) {
+            Scenario scenario = scenarioRepository.save(mapToScenario(event));
+            if (checkSensorsInScenarioConditions(scenarioAddedEvent, event.getHubId())) {
+                conditionRepository.saveAll(mapToCondition(scenarioAddedEvent, scenario));
+            }
+            if (checkSensorsInScenarioActions(scenarioAddedEvent, event.getHubId())) {
+                actionRepository.saveAll(mapToAction(scenarioAddedEvent, scenario));
+            }
+        } else {
+            Scenario scenario = scenarioOpt.get();
+
+            if (checkSensorsInScenarioConditions(scenarioAddedEvent, event.getHubId())) {
+                conditionRepository.saveAll(mapToCondition(scenarioAddedEvent, scenario));
+            }
+
+            if (checkSensorsInScenarioActions(scenarioAddedEvent, event.getHubId())) {
+                actionRepository.saveAll(mapToAction(scenarioAddedEvent, scenario));
+            }
+        }
     }
 
     @Override
-    public HubEventType getPayloadType() {
-        return HubEventType.SCENARIO_ADDED;
+    public String getPayloadType() {
+        return ScenarioAddedEventAvro.class.getSimpleName();
     }
 
     private Scenario mapToScenario(HubEventAvro event) {
@@ -62,6 +85,7 @@ public class ScenarioAddedHandler implements HubEventHandler {
     }
 
     private Set<Action> mapToAction(ScenarioAddedEventAvro scenarioAddedEvent, Scenario scenario) {
+        log.info("Обрабатываем список действий {}", scenarioAddedEvent.getActions());
         return scenarioAddedEvent.getActions().stream()
                 .map(action -> Action.builder()
                         .sensor(sensorRepository.findById(action.getSensorId()).orElseThrow())
@@ -75,13 +99,20 @@ public class ScenarioAddedHandler implements HubEventHandler {
     private Integer setValue(Object value) {
         if (value instanceof Integer) {
             return (Integer) value;
-        } else if (value instanceof Boolean) {
-            if ((Boolean) value) {
-                return 1;
-            } else {
-                return 0;
-            }
+        } else {
+            return (Boolean) value ? 1 : 0;
         }
-        return null;
+    }
+
+    private boolean checkSensorsInScenarioConditions(ScenarioAddedEventAvro scenarioAddedEvent, String hubId) {
+        return sensorRepository.existsByIdInAndHubId(scenarioAddedEvent.getConditions().stream()
+                .map(ScenarioConditionAvro::getSensorId)
+                .toList(), hubId);
+    }
+
+    private boolean checkSensorsInScenarioActions(ScenarioAddedEventAvro scenarioAddedEvent, String hubId) {
+        return sensorRepository.existsByIdInAndHubId(scenarioAddedEvent.getActions().stream()
+                .map(DeviceActionAvro::getSensorId)
+                .toList(), hubId);
     }
 }
