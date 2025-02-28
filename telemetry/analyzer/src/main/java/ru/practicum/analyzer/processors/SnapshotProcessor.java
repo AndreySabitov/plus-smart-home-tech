@@ -22,6 +22,8 @@ public class SnapshotProcessor {
     private final SnapshotHandler snapshotHandler;
     @Value("${topic.snapshots-topic}")
     private String topic;
+    @Value("${spring.kafka.consumer.snapshot-processor-poll-timeout}")
+    private int pollTimeout;
 
     public void start() {
         try {
@@ -30,7 +32,7 @@ public class SnapshotProcessor {
             Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
 
             while (true) {
-                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(pollTimeout));
 
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     SensorsSnapshotAvro sensorsSnapshot = record.value();

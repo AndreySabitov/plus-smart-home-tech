@@ -13,6 +13,7 @@ import ru.yandex.practicum.kafka.telemetry.event.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 @Component
 @RequiredArgsConstructor
@@ -38,7 +39,7 @@ public class SnapshotHandler {
         List<Condition> conditions = conditionRepository.findAllByScenario(scenario);
         log.info("получили список кондиций {} у сценария name = {}", conditions, scenario.getName());
 
-        return conditions.stream().noneMatch(condition -> !checkCondition(condition, sensorStateMap));
+        return conditions.stream().allMatch(condition -> checkCondition(condition, sensorStateMap));
     }
 
     private Boolean checkCondition(Condition condition, Map<String, SensorStateAvro> sensorStateMap) {
@@ -83,7 +84,7 @@ public class SnapshotHandler {
         Integer targetValue = condition.getValue();
         switch (operation) {
             case EQUALS -> {
-                return targetValue == currentValue;
+                return Objects.equals(targetValue, currentValue);
             }
             case LOWER_THAN -> {
                 return currentValue < targetValue;
