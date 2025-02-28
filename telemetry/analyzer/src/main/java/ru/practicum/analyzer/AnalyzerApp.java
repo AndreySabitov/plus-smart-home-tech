@@ -1,11 +1,11 @@
-package ru.practicum.collector;
+package ru.practicum.analyzer;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class Collector {
+public class AnalyzerApp {
     public static void main(String[] args) {
-        SpringApplication.run(Collector.class, args);
+        SpringApplication.run(AnalyzerApp.class, args);
     }
 }
