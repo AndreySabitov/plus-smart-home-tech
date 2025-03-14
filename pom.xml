@@ -19,6 +19,8 @@
         <module>telemetry</module>
         <module>infra</module>
         <module>commerce</module>
+        <module>commerce/shopping-store</module>
+        <module>commerce/interaction-api</module>
     </modules>
 
     <properties>
