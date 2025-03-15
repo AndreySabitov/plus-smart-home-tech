@@ -9,6 +9,16 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=smart-home
 
+  store-db:
+    image: postgres:16.1
+    container_name: postgres-smart-store-db
+    ports:
+      - "6432:5432"
+    environment:
+      - POSTGRES_PASSWORD=store
+      - POSTGRES_USER=store
+      - POSTGRES_DB=store-db
+
   kafka:
     image: confluentinc/confluent-local:7.4.3
     hostname: kafka

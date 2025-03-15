@@ -1,15 +1,14 @@
 package ru.practicum.interaction.dto;
 
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
+import lombok.*;
 import ru.practicum.interaction.enums.QuantityState;
 
 import java.util.UUID;
 
 @Getter
+@Builder
 public class SetProductQuantityStateRequest {
-    @NotNull
     private UUID productId;
-    @NotNull
     private QuantityState quantityState;
 }

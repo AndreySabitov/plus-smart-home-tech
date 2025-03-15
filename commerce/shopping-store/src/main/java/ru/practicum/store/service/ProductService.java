@@ -1,8 +1,8 @@
 package ru.practicum.store.service;
 
-import ru.practicum.interaction.dto.DeleteProductRequest;
 import ru.practicum.interaction.dto.ProductDto;
 import ru.practicum.interaction.dto.SetProductQuantityStateRequest;
+import ru.practicum.interaction.enums.ProductCategory;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,11 +10,11 @@ import java.util.UUID;
 public interface ProductService {
     ProductDto addProduct(ProductDto productDto);
 
-    List<ProductDto> getProductsByType();
+    List<ProductDto> getProductsByType(ProductCategory category, Integer page, Integer size, String sort);
 
     ProductDto updateProduct(ProductDto productDto);
 
-    Boolean deleteProduct(DeleteProductRequest deleteProduct);
+    Boolean deleteProduct(UUID productId);
 
     Boolean setProductQuantityState(SetProductQuantityStateRequest setProductQuantityState);
 

@@ -2,9 +2,10 @@ package ru.practicum.store.service;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.interaction.dto.DeleteProductRequest;
 import ru.practicum.interaction.dto.ProductDto;
 import ru.practicum.interaction.dto.SetProductQuantityStateRequest;
 import ru.practicum.interaction.enums.ProductCategory;
@@ -38,8 +39,13 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getProductsByType() {
-        return List.of();
+    public List<ProductDto> getProductsByType(ProductCategory category, Integer page, Integer size, String sort) {
+        Sort pageSort = Sort.by(sort);
+        PageRequest pageRequest = PageRequest.of(page, size, pageSort);
+
+        return productRepository.findAllByProductCategory(category, pageRequest).stream()
+                .map(ProductMapper::mapToDto)
+                .toList();
     }
 
     @Override
@@ -57,10 +63,6 @@ public class ProductServiceImpl implements ProductService {
         }
         Product oldProduct = productRepository.findById(uuid)
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден"));
-
-        if (oldProduct.getProductState().equals(ProductState.DEACTIVATE)) {
-            throw new ValidationException("Нельзя обновить деактивированный товар");
-        }
 
         if (!newProductName.isBlank() && !newProductName.equals(oldProduct.getProductName())) {
             oldProduct.setProductName(newProductName);
@@ -83,8 +85,8 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Boolean deleteProduct(DeleteProductRequest deleteProduct) {
-        Product oldProduct = productRepository.findById(deleteProduct.getProductId())
+    public Boolean deleteProduct(UUID productId) {
+        Product oldProduct = productRepository.findById(productId)
                 .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
 
         if (oldProduct.getProductState().equals(ProductState.DEACTIVATE)) {
