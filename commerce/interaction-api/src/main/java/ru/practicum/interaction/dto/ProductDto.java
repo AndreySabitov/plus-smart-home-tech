@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.experimental.FieldDefaults;
 import ru.practicum.interaction.enums.ProductCategory;
 import ru.practicum.interaction.enums.ProductState;
@@ -14,6 +15,7 @@ import ru.practicum.interaction.enums.QuantityState;
 import java.util.UUID;
 
 @Getter
+@Setter
 @FieldDefaults(level = AccessLevel.PRIVATE)
 @Builder
 public class ProductDto {
