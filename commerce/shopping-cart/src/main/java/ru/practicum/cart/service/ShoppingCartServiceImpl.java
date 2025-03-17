@@ -31,9 +31,12 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto addProductsInCart(String username, Map<UUID, Long> additionalProperties) {
         checkUsername(username);
 
-        if (shoppingCartRepository.existsByOwnerAndState(username, ShoppingCartState.ACTIVE)) {
-            Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE).get();
-            cart.setState(ShoppingCartState.DEACTIVATE);
+        Optional<Cart> cartOpt = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE);
+
+        if (cartOpt.isPresent()) {
+            Cart cart = cartOpt.get();
+            cart.getAdditionalProperties().putAll(additionalProperties);
+            return ShoppingCartMapper.mapToDto(cart);
         }
 
         return ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
