@@ -1,7 +1,7 @@
 package ru.practicum.store.service;
 
-import ru.practicum.interaction.dto.ProductDto;
-import ru.practicum.interaction.dto.SetProductQuantityStateRequest;
+import ru.practicum.interaction.dto.store.ProductDto;
+import ru.practicum.interaction.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.interaction.enums.ProductCategory;
 
 import java.util.List;

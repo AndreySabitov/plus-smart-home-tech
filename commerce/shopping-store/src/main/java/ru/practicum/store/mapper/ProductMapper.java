@@ -1,7 +1,7 @@
 package ru.practicum.store.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.interaction.dto.ProductDto;
+import ru.practicum.interaction.dto.store.ProductDto;
 import ru.practicum.store.model.Product;
 
 @UtilityClass

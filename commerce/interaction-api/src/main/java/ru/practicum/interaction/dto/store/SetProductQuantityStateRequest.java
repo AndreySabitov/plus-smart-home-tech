@@ -1,6 +1,5 @@
-package ru.practicum.interaction.dto;
+package ru.practicum.interaction.dto.store;
 
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import ru.practicum.interaction.enums.QuantityState;
 

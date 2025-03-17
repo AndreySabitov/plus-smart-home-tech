@@ -6,8 +6,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.interaction.dto.ProductDto;
-import ru.practicum.interaction.dto.SetProductQuantityStateRequest;
+import ru.practicum.interaction.dto.store.ProductDto;
+import ru.practicum.interaction.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.interaction.enums.ProductCategory;
 import ru.practicum.interaction.enums.ProductState;
 import ru.practicum.store.exception.ProductNotFoundException;
@@ -105,6 +105,9 @@ public class ProductServiceImpl implements ProductService {
         Product oldProduct = productRepository.findById(setProductQuantityState.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
 
+        if (setProductQuantityState.getQuantityState() == null) {
+            return false;
+        }
         if (oldProduct.getQuantityState().equals(setProductQuantityState.getQuantityState())) {
             log.info("Такое количество уже задано");
             return false;

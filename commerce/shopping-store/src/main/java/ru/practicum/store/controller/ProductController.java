@@ -4,8 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.interaction.dto.ProductDto;
-import ru.practicum.interaction.dto.SetProductQuantityStateRequest;
+import ru.practicum.interaction.dto.store.ProductDto;
+import ru.practicum.interaction.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.interaction.enums.ProductCategory;
 import ru.practicum.interaction.enums.QuantityState;
 import ru.practicum.store.service.ProductService;
@@ -27,7 +27,7 @@ public class ProductController {
 
     @GetMapping
     public List<ProductDto> getProductsByType(@RequestParam ProductCategory category, @RequestParam Integer page,
-                                              @RequestParam Integer size, @RequestParam String sort) {
+                                              @RequestParam Integer size, @RequestParam String sort) { //пересобрать в объект Pageable из спецификации
         return productService.getProductsByType(category, page, size, sort);
     }
 

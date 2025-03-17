@@ -1,4 +1,4 @@
-package ru.practicum.interaction.dto;
+package ru.practicum.interaction.dto.store;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
