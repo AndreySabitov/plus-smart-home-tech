@@ -2,7 +2,7 @@ package ru.practicum.cart.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.cart.model.Cart;
-import ru.practicum.interaction.dto.cart.ShoppingCartDto;
+import ru.practicum.dto.cart.ShoppingCartDto;
 
 @UtilityClass
 public class ShoppingCartMapper {

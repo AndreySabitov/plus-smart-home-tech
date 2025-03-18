@@ -1,7 +1,7 @@
 package ru.practicum.warehouse.mapper;
 
 import lombok.experimental.UtilityClass;
-import ru.practicum.interaction.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
 import ru.practicum.warehouse.model.WarehouseProduct;
 
 import java.util.Objects;

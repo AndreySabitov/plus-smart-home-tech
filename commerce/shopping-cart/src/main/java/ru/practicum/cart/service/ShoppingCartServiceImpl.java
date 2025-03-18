@@ -11,9 +11,10 @@ import ru.practicum.cart.mapper.ShoppingCartMapper;
 import ru.practicum.cart.model.Cart;
 import ru.practicum.cart.model.enums.ShoppingCartState;
 import ru.practicum.cart.repository.ShoppingCartRepository;
-import ru.practicum.interaction.dto.cart.ChangeProductQuantityRequest;
-import ru.practicum.interaction.dto.cart.ShoppingCartDto;
-import ru.practicum.interaction.dto.store.ProductDto;
+import ru.practicum.dto.cart.ChangeProductQuantityRequest;
+import ru.practicum.dto.cart.ShoppingCartDto;
+import ru.practicum.dto.store.ProductDto;
+import ru.practicum.feign_client.WarehouseClient;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -25,6 +26,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class ShoppingCartServiceImpl implements ShoppingCartService {
     private final ShoppingCartRepository shoppingCartRepository;
+    private final WarehouseClient warehouseClient;
 
     @Override
     @Transactional
@@ -39,12 +41,16 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             return ShoppingCartMapper.mapToDto(cart);
         }
 
-        return ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
+        ShoppingCartDto shoppingCartDto = ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
                 .additionalProperties(additionalProperties)
                 .state(ShoppingCartState.ACTIVE)
                 .owner(username)
                 .created(LocalDateTime.now())
                 .build()));
+
+        warehouseClient.checkProductsQuantity(shoppingCartDto);
+
+        return shoppingCartDto;
     }
 
     @Override
@@ -80,7 +86,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto removeOtherProductsFromCart(String username, List<UUID> productIds) {
+    public ShoppingCartDto removeProductsFromCart(String username, List<UUID> productIds) {
         checkUsername(username);
 
         Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
@@ -94,7 +100,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         Map<UUID, Long> newProducts = oldProducts.entrySet().stream()
-                .filter(ap -> productIds.contains(ap.getKey()))
+                .filter(ap -> !productIds.contains(ap.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         cart.setAdditionalProperties(newProducts);
@@ -105,7 +111,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ProductDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
+    public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
         Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
 
@@ -117,7 +123,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         products.put(request.getProductId(), request.getNewQuantity());
 
-        return ProductDto.builder().build(); // нужно возвращать информацию о продукте из сервиса ветрины
+        return ShoppingCartMapper.mapToDto(cart);
     }
 
     private void checkUsername(String username) {

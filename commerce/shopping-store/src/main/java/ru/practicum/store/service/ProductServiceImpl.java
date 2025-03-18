@@ -6,10 +6,11 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.interaction.dto.store.ProductDto;
-import ru.practicum.interaction.dto.store.SetProductQuantityStateRequest;
-import ru.practicum.interaction.enums.ProductCategory;
-import ru.practicum.interaction.enums.ProductState;
+import ru.practicum.dto.store.Pageable;
+import ru.practicum.dto.store.ProductDto;
+import ru.practicum.dto.store.SetProductQuantityStateRequest;
+import ru.practicum.enums.ProductCategory;
+import ru.practicum.enums.ProductState;
 import ru.practicum.store.exception.ProductNotFoundException;
 import ru.practicum.store.exception.ValidationException;
 import ru.practicum.store.mapper.ProductMapper;
@@ -39,9 +40,9 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getProductsByType(ProductCategory category, Integer page, Integer size, String sort) {
-        Sort pageSort = Sort.by(sort);
-        PageRequest pageRequest = PageRequest.of(page, size, pageSort);
+    public List<ProductDto> getProductsByType(ProductCategory category, Pageable pageable) {
+        Sort pageSort = Sort.by(pageable.getSort());
+        PageRequest pageRequest = PageRequest.of(pageable.getPage(), pageable.getSize(), pageSort);
 
         return productRepository.findAllByProductCategory(category, pageRequest).stream()
                 .map(ProductMapper::mapToDto)

@@ -2,14 +2,16 @@ package ru.practicum.warehouse.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.interaction.dto.cart.ShoppingCartDto;
-import ru.practicum.interaction.dto.warehouse.AddProductToWarehouseRequest;
-import ru.practicum.interaction.dto.warehouse.AddressDto;
-import ru.practicum.interaction.dto.warehouse.BookedProductsDto;
-import ru.practicum.interaction.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.dto.cart.ShoppingCartDto;
+import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
+import ru.practicum.dto.warehouse.AddressDto;
+import ru.practicum.dto.warehouse.BookedProductsDto;
+import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
 import ru.practicum.warehouse.service.WarehouseService;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/v1/warehouse")
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class WarehouseController {
 
     @PostMapping("/check")
     public BookedProductsDto checkProductsQuantity(@Valid @RequestBody ShoppingCartDto shoppingCartDto) {
+        log.info("Поступил запрос на проверку наличия товаров из корзины");
         return service.checkProductsQuantity(shoppingCartDto);
     }
 

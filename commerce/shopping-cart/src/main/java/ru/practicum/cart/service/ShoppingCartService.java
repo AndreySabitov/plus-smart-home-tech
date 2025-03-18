@@ -1,8 +1,9 @@
 package ru.practicum.cart.service;
 
-import ru.practicum.interaction.dto.cart.ChangeProductQuantityRequest;
-import ru.practicum.interaction.dto.cart.ShoppingCartDto;
-import ru.practicum.interaction.dto.store.ProductDto;
+
+
+import ru.practicum.dto.cart.ChangeProductQuantityRequest;
+import ru.practicum.dto.cart.ShoppingCartDto;
 
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ public interface ShoppingCartService {
 
     void deactivateCart(String username);
 
-    ShoppingCartDto removeOtherProductsFromCart(String username, List<UUID> productIds);
+    ShoppingCartDto removeProductsFromCart(String username, List<UUID> productIds);
 
-    ProductDto changeProductQuantity(String username, ChangeProductQuantityRequest request);
+    ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request);
 }

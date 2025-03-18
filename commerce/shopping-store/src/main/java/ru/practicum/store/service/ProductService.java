@@ -1,8 +1,9 @@
 package ru.practicum.store.service;
 
-import ru.practicum.interaction.dto.store.ProductDto;
-import ru.practicum.interaction.dto.store.SetProductQuantityStateRequest;
-import ru.practicum.interaction.enums.ProductCategory;
+import ru.practicum.dto.store.Pageable;
+import ru.practicum.dto.store.ProductDto;
+import ru.practicum.dto.store.SetProductQuantityStateRequest;
+import ru.practicum.enums.ProductCategory;
 
 import java.util.List;
 import java.util.UUID;
@@ -10,7 +11,7 @@ import java.util.UUID;
 public interface ProductService {
     ProductDto addProduct(ProductDto productDto);
 
-    List<ProductDto> getProductsByType(ProductCategory category, Integer page, Integer size, String sort);
+    List<ProductDto> getProductsByType(ProductCategory category, Pageable pageable);
 
     ProductDto updateProduct(ProductDto productDto);
 
