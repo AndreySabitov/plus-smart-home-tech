@@ -20,32 +20,34 @@ public class ShoppingCartController {
     private final ShoppingCartService shoppingCartService;
 
     @PutMapping
-    public ShoppingCartDto addProductsInCart(@RequestParam String username,
-                                             @RequestBody Map<UUID, Long> additionalProperties) {
-        log.info("Получили: username = {}; additionalProperties = {}", username, additionalProperties);
+    public ShoppingCartDto addProductsInCart(@RequestParam String username, @RequestBody Map<UUID, Long> newProducts) {
+        log.info("Получили: username = {}; newProducts = {}", username, newProducts);
 
-        return shoppingCartService.addProductsInCart(username, additionalProperties);
+        return shoppingCartService.addProductsInCart(username, newProducts);
     }
 
     @GetMapping
     public ShoppingCartDto getActiveShoppingCartOfUser(@RequestParam String username) {
+        log.info("Запрос на получение активной корзины пользователя {}", username);
         return shoppingCartService.getActiveShoppingCartOfUser(username);
     }
 
     @DeleteMapping
     public void deactivateCart(@RequestParam String username) {
+        log.info("Запрос на деактивирование корзины товаров");
         shoppingCartService.deactivateCart(username);
     }
 
     @PostMapping("/remove")
-    public ShoppingCartDto removeOtherProductsFromCart(@RequestParam String username,
-                                                       @RequestBody List<UUID> productIds) {
+    public ShoppingCartDto removeProductsFromCart(@RequestParam String username, @RequestBody List<UUID> productIds) {
+        log.info("Запрос на удаление продуктов {} из корзины", productIds);
         return shoppingCartService.removeProductsFromCart(username, productIds);
     }
 
     @PostMapping("/change-quantity")
     public ShoppingCartDto changeProductQuantity(@RequestParam String username,
                                                  @Valid @RequestBody ChangeProductQuantityRequest request) {
+        log.info("Запрос на изменение количества товара в корзине");
         return shoppingCartService.changeProductQuantity(username, request);
     }
 }

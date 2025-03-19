@@ -7,7 +7,7 @@ CREATE TABLE IF NOT EXISTS carts (
     created TIMESTAMP NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS additional_properties (
+CREATE TABLE IF NOT EXISTS cart_products (
     shopping_cart_id UUID references carts(id),
     product_id UUID NOT NULL,
     quantity BIGINT NOT NULL,

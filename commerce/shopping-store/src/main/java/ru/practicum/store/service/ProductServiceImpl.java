@@ -30,21 +30,17 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public ProductDto addProduct(ProductDto productDto) {
-        if (productDto.getProductId() == null) {
-            productDto.setProductId(UUID.randomUUID());
-        }
-        if (productRepository.existsById(productDto.getProductId())) {
-            throw new ValidationException("Нарушена уникальность ключа");
-        }
+        log.info("Сохраняем новый товар в БД");
         return ProductMapper.mapToDto(productRepository.save(ProductMapper.mapToProduct(productDto)));
     }
 
     @Override
     public List<ProductDto> getProductsByType(ProductCategory category, Pageable pageable) {
-        Sort pageSort = Sort.by(pageable.getSort());
+        Sort pageSort = Sort.by(String.join(", ", pageable.getSort()));
         PageRequest pageRequest = PageRequest.of(pageable.getPage(), pageable.getSize(), pageSort);
 
-        return productRepository.findAllByProductCategory(category, pageRequest).stream()
+        return productRepository.findAllByProductCategoryAndProductState(category, ProductState.ACTIVE,
+                        pageRequest).stream()
                 .map(ProductMapper::mapToDto)
                 .toList();
     }
@@ -66,18 +62,23 @@ public class ProductServiceImpl implements ProductService {
                 .orElseThrow(() -> new ProductNotFoundException("Продукт не найден"));
 
         if (!newProductName.isBlank() && !newProductName.equals(oldProduct.getProductName())) {
+            log.info("Обновляем имя");
             oldProduct.setProductName(newProductName);
         }
         if (!newDescription.isBlank() && !newDescription.equals(oldProduct.getDescription())) {
+            log.info("Обновляем описание");
             oldProduct.setDescription(newDescription);
         }
         if (!newImageSrc.equals(oldProduct.getImageSrc())) {
+            log.info("Обновляем ссылку на фото");
             oldProduct.setImageSrc(newImageSrc);
         }
         if (newProductCategory != null && !newProductCategory.equals(oldProduct.getProductCategory())) {
+            log.info("Обновляем категорию");
             oldProduct.setProductCategory(newProductCategory);
         }
         if (newPrice != null && !newPrice.equals(oldProduct.getPrice())) {
+            log.info("Обновляем цену");
             oldProduct.setPrice(newPrice);
         }
 
@@ -95,6 +96,7 @@ public class ProductServiceImpl implements ProductService {
             return false;
         }
 
+        log.info("Деактивация товара с id = {}", productId);
         oldProduct.setProductState(ProductState.DEACTIVATE);
 
         return true;
@@ -102,19 +104,16 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     @Transactional
-    public Boolean setProductQuantityState(SetProductQuantityStateRequest setProductQuantityState) {
-        Product oldProduct = productRepository.findById(setProductQuantityState.getProductId())
+    public Boolean setProductQuantityState(SetProductQuantityStateRequest request) {
+        Product oldProduct = productRepository.findById(request.getProductId())
                 .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
 
-        if (setProductQuantityState.getQuantityState() == null) {
-            return false;
-        }
-        if (oldProduct.getQuantityState().equals(setProductQuantityState.getQuantityState())) {
+        if (oldProduct.getQuantityState().equals(request.getQuantityState())) {
             log.info("Такое количество уже задано");
             return false;
         }
 
-        oldProduct.setQuantityState(setProductQuantityState.getQuantityState());
+        oldProduct.setQuantityState(request.getQuantityState());
 
         return true;
     }

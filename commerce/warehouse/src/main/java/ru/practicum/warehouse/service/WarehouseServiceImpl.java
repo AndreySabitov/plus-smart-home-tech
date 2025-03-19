@@ -1,6 +1,7 @@
 package ru.practicum.warehouse.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.cart.ShoppingCartDto;
@@ -26,13 +27,15 @@ import java.util.stream.Collectors;
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
+@Slf4j
 public class WarehouseServiceImpl implements WarehouseService {
     private final WarehouseRepository repository;
+    // private final StoreClient storeClient;
 
     @Override
     @Transactional
     public void addNewProduct(NewProductInWarehouseRequest newProductRequest) {
-        if (repository.existsById(newProductRequest.getProductId())) { // возможно нужно переделать на проверку по всем полям, если есть отличия то обновлять
+        if (repository.existsById(newProductRequest.getProductId())) {
             throw new SpecifiedProductAlreadyInWarehouseException("Такой продукт уже есть на складе");
         }
 
@@ -41,16 +44,24 @@ public class WarehouseServiceImpl implements WarehouseService {
 
     @Override
     public BookedProductsDto checkProductsQuantity(ShoppingCartDto shoppingCartDto) {
+        log.info("Начало проверки достаточного количества товаров {} на складе", shoppingCartDto.getProducts());
         return checkQuantity(shoppingCartDto);
     }
 
     @Override
     @Transactional
     public void addProductQuantity(AddProductToWarehouseRequest addProductQuantity) {
+        log.info("Увеличиваем количество товара {} на складе на {}шт", addProductQuantity.getProductId(),
+                addProductQuantity.getQuantity());
+
         WarehouseProduct product = repository.findById(addProductQuantity.getProductId())
                 .orElseThrow(() -> new ProductNotFoundInWarehouseException("Такого товара нет на складе"));
 
+        log.info("Сечас товара на складе {}", product.getQuantity());
         product.setQuantity(product.getQuantity() + addProductQuantity.getQuantity());
+        log.info("После обновления на складе {}шт", product.getQuantity());
+
+        // updateProductQuantityInShoppingStore(product);
     }
 
     @Override
@@ -72,14 +83,12 @@ public class WarehouseServiceImpl implements WarehouseService {
         Map<UUID, WarehouseProduct> warehouseProducts = repository.findAllById(cartProductIds).stream()
                 .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
 
-        if (cartProductIds.size() != warehouseProducts.size()) {
-            Set<UUID> productIds = warehouseProducts.keySet();
-            cartProductIds.forEach(id -> {
-                if (!productIds.contains(id)) {
-                    throw new ProductNotFoundInWarehouseException(String.format("Товара с id = %s нет на складе", id));
-                }
-            });
-        }
+        Set<UUID> productIds = warehouseProducts.keySet();
+        cartProductIds.forEach(id -> {
+            if (!productIds.contains(id)) {
+                throw new ProductNotFoundInWarehouseException(String.format("Товара с id = %s нет на складе", id));
+            }
+        });
 
         cartProducts.forEach((key, value) -> {
             if (warehouseProducts.get(key).getQuantity() < value) {
@@ -104,4 +113,23 @@ public class WarehouseServiceImpl implements WarehouseService {
                         .sum())
                 .build();
     }
+
+  /*  private void updateProductQuantityInShoppingStore(WarehouseProduct product) {
+        UUID productId = product.getProductId();
+        QuantityState quantityState;
+        Long quantity = product.getQuantity();
+
+        if (quantity == 0) {
+            quantityState = QuantityState.ENDED;
+        } else if (quantity < 10) {
+            quantityState = QuantityState.ENOUGH;
+        } else if (quantity < 100) {
+            quantityState = QuantityState.FEW;
+        } else {
+            quantityState = QuantityState.MANY;
+        }
+
+        log.info("Обновляем quantity_state на {} для товара с id = {}", quantityState, productId);
+        storeClient.setQuantityState(productId, quantityState);
+    }*/
 }

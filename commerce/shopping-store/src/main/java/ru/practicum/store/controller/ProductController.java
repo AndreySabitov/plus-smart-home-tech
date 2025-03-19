@@ -23,6 +23,7 @@ public class ProductController {
 
     @PutMapping
     public ProductDto addProduct(@Valid @RequestBody ProductDto productDto) {
+        log.info("Получили запрос на добавление товара c productName = {}", productDto.getProductName());
         return productService.addProduct(productDto);
     }
 
@@ -39,21 +40,18 @@ public class ProductController {
 
     @PostMapping("/removeProductFromStore")
     public Boolean deleteProduct(@RequestBody UUID productId) {
-        log.info("Удаляем товар с id = {}", productId);
+        log.info("Запрос на деактивацию товара с id = {}", productId);
         return productService.deleteProduct(productId);
     }
 
     @PostMapping("/quantityState")
-    public Boolean setQuantityState(@RequestParam UUID productId,
-                                    @RequestParam QuantityState quantityState) {
-        return productService.setProductQuantityState(SetProductQuantityStateRequest.builder()
-                .productId(productId)
-                .quantityState(quantityState)
-                .build());
+    public Boolean setQuantityState(@Valid SetProductQuantityStateRequest request) {
+        return productService.setProductQuantityState(request);
     }
 
     @GetMapping("/{productId}")
     public ProductDto getProductById(@PathVariable UUID productId) {
+        log.info("Запрос на получение информации о товаре с id = {}", productId);
         return productService.getProductById(productId);
     }
 }

@@ -24,10 +24,10 @@ public class Cart {
     UUID shoppingCartId;
 
     @ElementCollection
-    @CollectionTable(name = "additional_properties", joinColumns = @JoinColumn(name = "shopping_cart_id"))
+    @CollectionTable(name = "cart_products", joinColumns = @JoinColumn(name = "shopping_cart_id"))
     @MapKeyColumn(name = "product_id")
     @Column(name = "quantity")
-    Map<UUID, Long> additionalProperties;
+    Map<UUID, Long> cartProducts;
 
     @Enumerated(value = EnumType.STRING)
     ShoppingCartState state;

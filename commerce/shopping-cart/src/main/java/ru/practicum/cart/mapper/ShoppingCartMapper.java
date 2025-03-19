@@ -10,7 +10,7 @@ public class ShoppingCartMapper {
     public ShoppingCartDto mapToDto(Cart cart) {
         return ShoppingCartDto.builder()
                 .shoppingCartId(cart.getShoppingCartId())
-                .products(cart.getAdditionalProperties())
+                .products(cart.getCartProducts())
                 .build();
     }
 }

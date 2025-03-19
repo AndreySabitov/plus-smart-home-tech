@@ -13,7 +13,6 @@ import ru.practicum.cart.model.enums.ShoppingCartState;
 import ru.practicum.cart.repository.ShoppingCartRepository;
 import ru.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.practicum.dto.cart.ShoppingCartDto;
-import ru.practicum.dto.store.ProductDto;
 import ru.practicum.feign_client.WarehouseClient;
 
 import java.time.LocalDateTime;
@@ -30,25 +29,29 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     @Override
     @Transactional
-    public ShoppingCartDto addProductsInCart(String username, Map<UUID, Long> additionalProperties) {
+    public ShoppingCartDto addProductsInCart(String username, Map<UUID, Long> newProducts) {
         checkUsername(username);
-
+        log.info("Начало добавления товаров в активную корзину");
         Optional<Cart> cartOpt = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE);
 
         if (cartOpt.isPresent()) {
             Cart cart = cartOpt.get();
-            cart.getAdditionalProperties().putAll(additionalProperties);
+            log.info("Получили существующую корзину с товарами {}", cart.getCartProducts());
+            cart.getCartProducts().putAll(newProducts);
+            log.info("Добавили в неё новые товары и получили новый список товаров {}", cart.getCartProducts());
             return ShoppingCartMapper.mapToDto(cart);
         }
 
         ShoppingCartDto shoppingCartDto = ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
-                .additionalProperties(additionalProperties)
+                .cartProducts(newProducts)
                 .state(ShoppingCartState.ACTIVE)
                 .owner(username)
                 .created(LocalDateTime.now())
                 .build()));
 
+        log.info("Проверка наличия товаров {} на складе", shoppingCartDto.getProducts());
         warehouseClient.checkProductsQuantity(shoppingCartDto);
+        log.info("Проверка наличия товаров прошла успешно");
 
         return shoppingCartDto;
     }
@@ -61,11 +64,13 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Optional<Cart> cartOpt = shoppingCartRepository
                 .findByOwnerAndState(username, ShoppingCartState.ACTIVE);
 
+        log.info("Возвращаем существующую активную корзину или создаём новую для пользователя {}", username);
+
         Cart result = cartOpt.orElseGet(() -> shoppingCartRepository.save(Cart.builder()
                 .created(LocalDateTime.now())
                 .owner(username)
                 .state(ShoppingCartState.ACTIVE)
-                .additionalProperties(new HashMap<>())
+                .cartProducts(new HashMap<>())
                 .build()));
 
         return ShoppingCartMapper.mapToDto(result);
@@ -79,7 +84,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
 
-        log.info("получили корзину: {}", cart);
+        log.info("получили корзину для деактивации: {}", cart.getShoppingCartId());
 
         cart.setState(ShoppingCartState.DEACTIVATE);
     }
@@ -92,7 +97,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
 
-        Map<UUID, Long> oldProducts = cart.getAdditionalProperties();
+        Map<UUID, Long> oldProducts = cart.getCartProducts();
 
 
         if (!productIds.stream().allMatch(oldProducts::containsKey)) {
@@ -100,10 +105,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         }
 
         Map<UUID, Long> newProducts = oldProducts.entrySet().stream()
-                .filter(ap -> !productIds.contains(ap.getKey()))
+                .filter(cp -> !productIds.contains(cp.getKey()))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
-        cart.setAdditionalProperties(newProducts);
+        cart.setCartProducts(newProducts);
 
 
         return ShoppingCartMapper.mapToDto(cart);
@@ -115,7 +120,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
                 .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
 
-        Map<UUID, Long> products = cart.getAdditionalProperties();
+        Map<UUID, Long> products = cart.getCartProducts();
 
         if (!products.containsKey(request.getProductId())) {
             throw new NoProductsInShoppingCartException("Такого продукта нет в корзине");

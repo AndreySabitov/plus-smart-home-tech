@@ -20,6 +20,7 @@ public class WarehouseController {
 
     @PutMapping
     public void addNewProduct(@Valid @RequestBody NewProductInWarehouseRequest newProductRequest) {
+        log.info("Запрос на добавление нового товара на склад");
         service.addNewProduct(newProductRequest);
     }
 
@@ -31,11 +32,14 @@ public class WarehouseController {
 
     @PostMapping("/add")
     public void addProductQuantity(@Valid @RequestBody AddProductToWarehouseRequest addProductQuantity) {
+        log.info("Запрос на добавление товара с id = {} в количестве {}шт", addProductQuantity.getProductId(),
+                addProductQuantity.getQuantity());
         service.addProductQuantity(addProductQuantity);
     }
 
     @GetMapping("/address")
     public AddressDto getWarehouseAddress() {
+        log.info("Запрос на получение адреса склада");
         return service.getWarehouseAddress();
     }
 }
