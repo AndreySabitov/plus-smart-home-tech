@@ -11,6 +11,7 @@ import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
 import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.feign_client.exception.WarehouseServerUnavailable;
 import ru.practicum.feign_client.fallback.WarehouseClientFallback;
 
 @FeignClient(name = "warehouse", path = "/api/v1/warehouse", fallback = WarehouseClientFallback.class)
