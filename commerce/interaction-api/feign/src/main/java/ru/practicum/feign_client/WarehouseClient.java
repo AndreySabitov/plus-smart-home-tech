@@ -1,5 +1,6 @@
 package ru.practicum.feign_client;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -18,6 +19,7 @@ public interface WarehouseClient {
     void addNewProduct(@RequestBody NewProductInWarehouseRequest newProductRequest);
 
     @PostMapping("/check")
+    @CircuitBreaker(name = "warehouse")
     BookedProductsDto checkProductsQuantity(@RequestBody ShoppingCartDto shoppingCartDto);
 
     @PostMapping("/add")

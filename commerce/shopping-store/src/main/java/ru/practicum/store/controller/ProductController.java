@@ -1,6 +1,7 @@
 package ru.practicum.store.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -27,7 +28,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ProductsListResponse getProductsByCategory(ProductCategory category, Pageable pageable) {
+    public ProductsListResponse getProductsByCategory(@NotNull ProductCategory category, @Valid Pageable pageable) {
         log.info("Получили категорию = {} и pageable = {}", category, pageable);
         return productService.getProductsByCategory(category, pageable);
     }

@@ -19,12 +19,10 @@ spring:
 
 resilience4j:
   circuitbreaker:
-    default:
-      slidingWindowSize: 50
-      failureRateThreshold: 50
     instances:
       warehouse:
         slidingWindowSize: 10
+        failureRateThreshold: 50
         waitDurationInOpenState: 10000
         permittedNumberOfCallsInHalfOpenState: 3
         slidingWindowType: COUNT_BASED
