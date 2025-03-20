@@ -8,6 +8,9 @@ spring:
     import: "configserver: "
   cloud:
     config:
+      openfeign:
+        circuitbreaker:
+          enabled: true
       discovery:
         enabled: true
         serviceId: config-server

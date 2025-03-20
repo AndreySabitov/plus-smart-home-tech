@@ -6,7 +6,6 @@ import ru.practicum.dto.store.ProductsListResponse;
 import ru.practicum.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.enums.ProductCategory;
 
-import java.util.List;
 import java.util.UUID;
 
 public interface ProductService {

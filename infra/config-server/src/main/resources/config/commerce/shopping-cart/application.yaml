@@ -16,3 +16,17 @@ spring:
     url: jdbc:postgresql://localhost:6432/store-db
     username: store
     password: store
+
+resilience4j:
+  circuitbreaker:
+    default:
+      slidingWindowSize: 50
+      failureRateThreshold: 50
+    instances:
+      warehouse:
+        slidingWindowSize: 10
+        waitDurationInOpenState: 10000
+        permittedNumberOfCallsInHalfOpenState: 3
+        slidingWindowType: COUNT_BASED
+        minimumNumberOfCalls: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true

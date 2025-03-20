@@ -3,7 +3,6 @@ package ru.practicum.store.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.store.Pageable;
 import ru.practicum.dto.store.ProductDto;
@@ -12,7 +11,6 @@ import ru.practicum.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.enums.ProductCategory;
 import ru.practicum.store.service.ProductService;
 
-import java.util.List;
 import java.util.UUID;
 
 @Slf4j

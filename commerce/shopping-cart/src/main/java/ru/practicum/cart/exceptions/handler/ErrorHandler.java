@@ -11,6 +11,7 @@ import ru.practicum.cart.exceptions.NotAuthorizedUserException;
 import ru.practicum.cart.exceptions.NotFoundShoppingCartException;
 import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
+import ru.practicum.feign_client.exception.WarehouseServerUnavailable;
 
 @Slf4j
 @RestControllerAdvice
@@ -56,6 +57,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     public ErrorResponse handleMethodArgumentNotValid(final MethodArgumentNotValidException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ErrorResponse handleWarehouseServerUnavailable(final WarehouseServerUnavailable e) {
         return new ErrorResponse(e.getMessage());
     }
 }
