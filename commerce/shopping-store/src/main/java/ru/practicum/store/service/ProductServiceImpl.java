@@ -6,9 +6,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.practicum.dto.store.Pageable;
-import ru.practicum.dto.store.ProductDto;
-import ru.practicum.dto.store.SetProductQuantityStateRequest;
+import ru.practicum.dto.store.*;
 import ru.practicum.enums.ProductCategory;
 import ru.practicum.enums.ProductState;
 import ru.practicum.store.exception.ProductNotFoundException;
@@ -35,14 +33,24 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public List<ProductDto> getProductsByType(ProductCategory category, Pageable pageable) {
-        Sort pageSort = Sort.by(String.join(", ", pageable.getSort()));
-        PageRequest pageRequest = PageRequest.of(pageable.getPage(), pageable.getSize(), pageSort);
-
-        return productRepository.findAllByProductCategoryAndProductState(category, ProductState.ACTIVE,
-                        pageRequest).stream()
-                .map(ProductMapper::mapToDto)
+    public ProductsListResponse getProductsByCategory(ProductCategory category, Pageable pageable) {
+        List<Sort.Order> orders = pageable.getSort().stream()
+                .map(s -> new Sort.Order(Sort.Direction.ASC, s))
                 .toList();
+        PageRequest pageRequest = PageRequest.of(pageable.getPage(), pageable.getSize(), Sort.by(orders));
+
+        return ProductsListResponse.builder()
+                .content(productRepository.findAllByProductCategoryAndProductState(category, ProductState.ACTIVE,
+                                pageRequest).stream()
+                        .map(ProductMapper::mapToDto)
+                        .toList())
+                .sort(orders.stream()
+                        .map(o -> SortProperties.builder()
+                                .direction(o.getDirection().toString())
+                                .property(o.getProperty())
+                                .build())
+                        .toList())
+                .build();
     }
 
     @Override
@@ -58,8 +66,7 @@ public class ProductServiceImpl implements ProductService {
         if (uuid == null) {
             throw new ValidationException("id должен быть задан");
         }
-        Product oldProduct = productRepository.findById(uuid)
-                .orElseThrow(() -> new ProductNotFoundException("Продукт не найден"));
+        Product oldProduct = findProduct(uuid);
 
         if (!newProductName.isBlank() && !newProductName.equals(oldProduct.getProductName())) {
             log.info("Обновляем имя");
@@ -88,8 +95,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Boolean deleteProduct(UUID productId) {
-        Product oldProduct = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
+        Product oldProduct = findProduct(productId);
 
         if (oldProduct.getProductState().equals(ProductState.DEACTIVATE)) {
             log.info("Товар уже деактивирован");
@@ -105,8 +111,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional
     public Boolean setProductQuantityState(SetProductQuantityStateRequest request) {
-        Product oldProduct = productRepository.findById(request.getProductId())
-                .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
+        Product oldProduct = findProduct(request.getProductId());
 
         if (oldProduct.getQuantityState().equals(request.getQuantityState())) {
             log.info("Такое количество уже задано");
@@ -120,9 +125,13 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ProductDto getProductById(UUID productId) {
-        Product product = productRepository.findById(productId)
-                .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
+        Product product = findProduct(productId);
 
         return ProductMapper.mapToDto(product);
+    }
+
+    private Product findProduct(UUID productId) {
+        return productRepository.findById(productId)
+                .orElseThrow(() -> new ProductNotFoundException("Товар не найден"));
     }
 }

@@ -1,5 +1,6 @@
 package ru.practicum.warehouse.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -9,9 +10,11 @@ import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
 import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.enums.QuantityState;
+import ru.practicum.feign_client.StoreClient;
+import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
+import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
 import ru.practicum.warehouse.address.AddressManager;
-import ru.practicum.warehouse.exceptions.ProductInShoppingCartLowQuantityInWarehouseException;
-import ru.practicum.warehouse.exceptions.ProductNotFoundInWarehouseException;
 import ru.practicum.warehouse.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.warehouse.mapper.WarehouseProductMapper;
 import ru.practicum.warehouse.model.WarehouseProduct;
@@ -30,7 +33,7 @@ import java.util.stream.Collectors;
 @Slf4j
 public class WarehouseServiceImpl implements WarehouseService {
     private final WarehouseRepository repository;
-    // private final StoreClient storeClient;
+    private final StoreClient storeClient;
 
     @Override
     @Transactional
@@ -61,7 +64,15 @@ public class WarehouseServiceImpl implements WarehouseService {
         product.setQuantity(product.getQuantity() + addProductQuantity.getQuantity());
         log.info("После обновления на складе {}шт", product.getQuantity());
 
-        // updateProductQuantityInShoppingStore(product);
+        try {
+            updateProductQuantityInShoppingStore(product);
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                log.info("Товар ещё не добавили на витрину магазина");
+            } else {
+                log.error("Ошибка при обновлении количества товара в магазине", e);
+            }
+        }
     }
 
     @Override
@@ -114,7 +125,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
-  /*  private void updateProductQuantityInShoppingStore(WarehouseProduct product) {
+    private void updateProductQuantityInShoppingStore(WarehouseProduct product) {
         UUID productId = product.getProductId();
         QuantityState quantityState;
         Long quantity = product.getQuantity();
@@ -131,5 +142,5 @@ public class WarehouseServiceImpl implements WarehouseService {
 
         log.info("Обновляем quantity_state на {} для товара с id = {}", quantityState, productId);
         storeClient.setQuantityState(productId, quantityState);
-    }*/
+    }
 }

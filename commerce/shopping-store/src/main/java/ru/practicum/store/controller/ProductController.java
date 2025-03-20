@@ -3,12 +3,13 @@ package ru.practicum.store.controller;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.data.web.SpringDataWebProperties;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.store.Pageable;
 import ru.practicum.dto.store.ProductDto;
+import ru.practicum.dto.store.ProductsListResponse;
 import ru.practicum.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.enums.ProductCategory;
-import ru.practicum.enums.QuantityState;
 import ru.practicum.store.service.ProductService;
 
 import java.util.List;
@@ -28,9 +29,9 @@ public class ProductController {
     }
 
     @GetMapping
-    public List<ProductDto> getProductsByCategory(ProductCategory category, Pageable pageable) {
+    public ProductsListResponse getProductsByCategory(ProductCategory category, Pageable pageable) {
         log.info("Получили категорию = {} и pageable = {}", category, pageable);
-        return productService.getProductsByType(category, pageable);
+        return productService.getProductsByCategory(category, pageable);
     }
 
     @PostMapping

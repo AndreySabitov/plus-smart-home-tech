@@ -9,6 +9,4 @@ import java.util.UUID;
 
 public interface ShoppingCartRepository extends JpaRepository<Cart, UUID> {
     Optional<Cart> findByOwnerAndState(String owner, ShoppingCartState state);
-
-    Boolean existsByOwnerAndState(String owner, ShoppingCartState state);
 }

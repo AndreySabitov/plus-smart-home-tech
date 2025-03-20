@@ -4,7 +4,6 @@ import feign.FeignException;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.store.ProductDto;
-import ru.practicum.dto.store.SetProductQuantityStateRequest;
 import ru.practicum.enums.QuantityState;
 
 import java.util.UUID;
@@ -21,7 +20,8 @@ public interface StoreClient {
     Boolean deleteProduct(@RequestBody UUID productId) throws FeignException;
 
     @PostMapping("/quantityState")
-    Boolean setQuantityState(SetProductQuantityStateRequest request) throws FeignException;
+    Boolean setQuantityState(@RequestParam UUID productId,
+                             @RequestParam QuantityState quantityState) throws FeignException;
 
     @GetMapping("/{productId}")
     ProductDto getProductById(@PathVariable UUID productId) throws FeignException;

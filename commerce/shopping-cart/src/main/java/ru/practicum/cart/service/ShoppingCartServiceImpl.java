@@ -1,5 +1,6 @@
 package ru.practicum.cart.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -14,6 +15,8 @@ import ru.practicum.cart.repository.ShoppingCartRepository;
 import ru.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.practicum.dto.cart.ShoppingCartDto;
 import ru.practicum.feign_client.WarehouseClient;
+import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
+import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -31,27 +34,40 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Transactional
     public ShoppingCartDto addProductsInCart(String username, Map<UUID, Long> newProducts) {
         checkUsername(username);
+
         log.info("Начало добавления товаров в активную корзину");
         Optional<Cart> cartOpt = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE);
+
+        ShoppingCartDto shoppingCartDto;
 
         if (cartOpt.isPresent()) {
             Cart cart = cartOpt.get();
             log.info("Получили существующую корзину с товарами {}", cart.getCartProducts());
             cart.getCartProducts().putAll(newProducts);
             log.info("Добавили в неё новые товары и получили новый список товаров {}", cart.getCartProducts());
-            return ShoppingCartMapper.mapToDto(cart);
+            shoppingCartDto = ShoppingCartMapper.mapToDto(cart);
+        } else {
+            shoppingCartDto = ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
+                    .cartProducts(newProducts)
+                    .state(ShoppingCartState.ACTIVE)
+                    .owner(username)
+                    .created(LocalDateTime.now())
+                    .build()));
         }
 
-        ShoppingCartDto shoppingCartDto = ShoppingCartMapper.mapToDto(shoppingCartRepository.save(Cart.builder()
-                .cartProducts(newProducts)
-                .state(ShoppingCartState.ACTIVE)
-                .owner(username)
-                .created(LocalDateTime.now())
-                .build()));
-
-        log.info("Проверка наличия товаров {} на складе", shoppingCartDto.getProducts());
-        warehouseClient.checkProductsQuantity(shoppingCartDto);
-        log.info("Проверка наличия товаров прошла успешно");
+        try {
+            log.info("Проверка наличия товаров {} на складе", shoppingCartDto.getProducts());
+            warehouseClient.checkProductsQuantity(shoppingCartDto);
+            log.info("Проверка наличия товаров прошла успешно");
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new ProductNotFoundInWarehouseException(e.getMessage());
+            } else if (e.status() == 400) {
+                throw new ProductInShoppingCartLowQuantityInWarehouseException(e.getMessage());
+            } else {
+                throw e;
+            }
+        }
 
         return shoppingCartDto;
     }
@@ -61,8 +77,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto getActiveShoppingCartOfUser(String username) {
         checkUsername(username);
 
-        Optional<Cart> cartOpt = shoppingCartRepository
-                .findByOwnerAndState(username, ShoppingCartState.ACTIVE);
+        Optional<Cart> cartOpt = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE);
 
         log.info("Возвращаем существующую активную корзину или создаём новую для пользователя {}", username);
 
@@ -81,8 +96,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public void deactivateCart(String username) {
         checkUsername(username);
 
-        Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
-                .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
+        Cart cart = getActiveCartOfUser(username);
 
         log.info("получили корзину для деактивации: {}", cart.getShoppingCartId());
 
@@ -94,8 +108,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     public ShoppingCartDto removeProductsFromCart(String username, List<UUID> productIds) {
         checkUsername(username);
 
-        Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
-                .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
+        Cart cart = getActiveCartOfUser(username);
 
         Map<UUID, Long> oldProducts = cart.getCartProducts();
 
@@ -117,8 +130,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     @Transactional
     public ShoppingCartDto changeProductQuantity(String username, ChangeProductQuantityRequest request) {
-        Cart cart = shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
-                .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
+        Cart cart = getActiveCartOfUser(username);
 
         Map<UUID, Long> products = cart.getCartProducts();
 
@@ -135,5 +147,10 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         if (username.isBlank()) {
             throw new NotAuthorizedUserException("Имя пользователя не должно быть пустым");
         }
+    }
+
+    private Cart getActiveCartOfUser(String username) {
+        return shoppingCartRepository.findByOwnerAndState(username, ShoppingCartState.ACTIVE)
+                .orElseThrow(() -> new NotFoundShoppingCartException("У данного пользователя нет активной корзины"));
     }
 }
