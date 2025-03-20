@@ -1,6 +1,5 @@
 package ru.practicum.feign_client;
 
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,7 +10,6 @@ import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
 import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
-import ru.practicum.feign_client.exception.WarehouseServerUnavailable;
 import ru.practicum.feign_client.fallback.WarehouseClientFallback;
 
 @FeignClient(name = "warehouse", path = "/api/v1/warehouse", fallback = WarehouseClientFallback.class)
@@ -20,7 +18,6 @@ public interface WarehouseClient {
     void addNewProduct(@RequestBody NewProductInWarehouseRequest newProductRequest);
 
     @PostMapping("/check")
-    @CircuitBreaker(name = "warehouse")
     BookedProductsDto checkProductsQuantity(@RequestBody ShoppingCartDto shoppingCartDto);
 
     @PostMapping("/add")

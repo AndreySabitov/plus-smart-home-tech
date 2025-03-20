@@ -6,6 +6,12 @@ spring:
       hibernate:
         format_sql: true
     show_sql: true
+  cloud:
+    openfeign:
+      circuitbreaker:
+        enabled: true
+        alphanumeric-ids:
+          enabled: true
 
   sql:
     init:
@@ -20,7 +26,7 @@ spring:
 resilience4j:
   circuitbreaker:
     instances:
-      warehouse:
+      WarehouseClientcheckProductsQuantity:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10000
@@ -28,3 +34,9 @@ resilience4j:
         slidingWindowType: COUNT_BASED
         minimumNumberOfCalls: 5
         automaticTransitionFromOpenToHalfOpenEnabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: circuitbreakers

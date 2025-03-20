@@ -5,12 +5,9 @@ spring:
   application:
     name: shopping-cart
   config:
-    import: "configserver: "
+    import: "configserver:"
   cloud:
     config:
-      openfeign:
-        circuitbreaker:
-          enabled: true
       discovery:
         enabled: true
         serviceId: config-server
@@ -23,9 +20,3 @@ eureka:
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: circuitbreakers
