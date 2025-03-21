@@ -34,7 +34,7 @@ public class ShoppingCartController {
 
     @DeleteMapping
     public void deactivateCart(@RequestParam String username) {
-        log.info("Запрос на деактивирование корзины товаров");
+        log.info("Запрос на деактивацию корзины товаров");
         shoppingCartService.deactivateCart(username);
     }
 
