@@ -28,7 +28,7 @@ public class ProductController {
     }
 
     @GetMapping
-    public ProductsListResponse getProductsByCategory(@NotNull ProductCategory category, @Valid Pageable pageable) {
+    public ProductsListResponse getProductsByCategory(@RequestParam ProductCategory category, @Valid Pageable pageable) {
         log.info("Получили категорию = {} и pageable = {}", category, pageable);
         return productService.getProductsByCategory(category, pageable);
     }
