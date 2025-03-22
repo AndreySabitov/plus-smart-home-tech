@@ -19,7 +19,7 @@ spring:
 
   datasource:
     driverClassName: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:6432/store-db
+    url: jdbc:postgresql://localhost:6433/cart-db
     username: store
     password: store
 

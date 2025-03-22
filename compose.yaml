@@ -11,13 +11,33 @@ services:
 
   store-db:
     image: postgres:16.1
-    container_name: postgres-smart-store-db
+    container_name: commerce-store-db
     ports:
       - "6432:5432"
     environment:
       - POSTGRES_PASSWORD=store
       - POSTGRES_USER=store
       - POSTGRES_DB=store-db
+
+  cart-db:
+    image: postgres:16.1
+    container_name: commerce-cart-db
+    ports:
+      - "6433:5432"
+    environment:
+      - POSTGRES_PASSWORD=store
+      - POSTGRES_USER=store
+      - POSTGRES_DB=cart-db
+
+  warehouse-db:
+    image: postgres:16.1
+    container_name: commerce-warehouse-db
+    ports:
+      - "6434:5432"
+    environment:
+      - POSTGRES_PASSWORD=store
+      - POSTGRES_USER=store
+      - POSTGRES_DB=warehouse-db
 
   kafka:
     image: confluentinc/confluent-local:7.4.3
