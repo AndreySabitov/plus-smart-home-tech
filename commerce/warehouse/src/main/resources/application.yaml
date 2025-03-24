@@ -17,6 +17,8 @@ spring:
         max-interval: 6000
 
 eureka:
+  instance:
+    instance-id: "${spring.application.name}:${random.value}"
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/

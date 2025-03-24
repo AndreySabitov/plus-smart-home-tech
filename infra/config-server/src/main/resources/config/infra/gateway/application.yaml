@@ -17,3 +17,4 @@ spring:
             - Path=/shopping-store/**
           filters:
             - PrefixPath=/api/v1
+            - Retry=3,NOT_FOUND,GET,10ms,50ms,2,false
