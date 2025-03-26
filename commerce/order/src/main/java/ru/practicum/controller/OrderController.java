@@ -43,4 +43,19 @@ public class OrderController {
     public OrderDto payOrder(@NotNull @RequestBody UUID orderId) {
         return orderService.payOrder(orderId);
     }
+
+    @PostMapping("/payment/failed")
+    public OrderDto payOrderFailed(@NotNull @RequestBody UUID orderId) {
+        return orderService.changeStateToPaymentFailed(orderId);
+    }
+
+    @PostMapping("/delivery")
+    public OrderDto sendOrderToDelivery(@NotNull @RequestBody UUID orderId) {
+        return orderService.sendOrderToDelivery(orderId);
+    }
+
+    @PostMapping("/delivery/failed")
+    public OrderDto changeStateToDeliveryFailed(@NotNull @RequestBody UUID orderId) {
+        return orderService.changeStateToDeliveryFailed(orderId);
+    }
 }

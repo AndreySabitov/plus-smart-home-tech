@@ -15,4 +15,10 @@ public interface OrderService {
     OrderDto returnOrder(ProductReturnRequest returnRequest);
 
     OrderDto payOrder(UUID orderId);
+
+    OrderDto changeStateToPaymentFailed(UUID orderId);
+
+    OrderDto sendOrderToDelivery(UUID orderId);
+
+    OrderDto changeStateToDeliveryFailed(UUID orderId);
 }

@@ -110,6 +110,37 @@ public class OrderServiceImpl implements OrderService {
         return OrderMapper.mapToDto(oldOrder);
     }
 
+    @Override
+    public OrderDto changeStateToPaymentFailed(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        // возможно нужно проверить статус
+
+        oldOrder.setState(OrderState.PAYMENT_FAILED);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    public OrderDto sendOrderToDelivery(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        // тут будет логика по обработке заказа сервисом delivery
+
+        oldOrder.setState(OrderState.ON_DELIVERY);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    public OrderDto changeStateToDeliveryFailed(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        oldOrder.setState(OrderState.DELIVERY_FAILED);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
     private void checkUsername(String username) {
         if (username.isBlank()) {
             throw new AuthorizationException("Имя пользователя не должно быть пустым");
