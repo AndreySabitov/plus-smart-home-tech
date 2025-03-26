@@ -17,6 +17,8 @@ spring:
         max-interval: 6000
 
 eureka:
+  instance:
+    hostname: localhost
   client:
     serviceUrl:
       defaultZone: http://localhost:8761/eureka/
