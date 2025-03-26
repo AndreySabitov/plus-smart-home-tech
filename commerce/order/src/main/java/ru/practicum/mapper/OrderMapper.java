@@ -7,6 +7,8 @@ import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.model.Order;
 
+import java.time.LocalDateTime;
+
 @UtilityClass
 public class OrderMapper {
 
@@ -15,7 +17,8 @@ public class OrderMapper {
                 .state(OrderState.NEW)
                 .shoppingCartId(request.getShoppingCart().getShoppingCartId())
                 .products(request.getShoppingCart().getProducts())
-                .username(username)
+                .owner(username)
+                .created(LocalDateTime.now())
               //  .deliveryVolume(bookedProducts.getDeliveryVolume())
               //  .deliveryWeight(bookedProducts.getDeliveryWeight())
              //   .fragile(bookedProducts.getFragile())

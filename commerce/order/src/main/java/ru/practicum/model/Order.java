@@ -3,9 +3,9 @@ package ru.practicum.model;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.RequestParam;
 import ru.practicum.enums.order.OrderState;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,7 +22,7 @@ public class Order {
     @Column(name = "id")
     UUID orderId;
 
-    String username;
+    String owner;
 
     @Column(name = "shopping_cart_id")
     UUID shoppingCartId;
@@ -54,4 +54,6 @@ public class Order {
     Double deliveryPrice;
     @Column(name = "product_price")
     Double productPrice;
+
+    LocalDateTime created;
 }

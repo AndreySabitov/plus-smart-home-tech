@@ -1,18 +1,19 @@
 package ru.practicum.service;
 
-import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.order.CreateNewOrderRequest;
 import ru.practicum.dto.order.OrderDto;
-import ru.practicum.dto.warehouse.BookedProductsDto;
+import ru.practicum.exceptions.AuthorizationException;
 import ru.practicum.feign_client.WarehouseClient;
-import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
-import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
 import ru.practicum.mapper.OrderMapper;
 import ru.practicum.repository.OrderRepository;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -23,7 +24,9 @@ public class OrderServiceImpl implements OrderService {
     private final WarehouseClient warehouseClient;
 
     @Override
+    @Transactional
     public OrderDto createNewOrder(CreateNewOrderRequest createOrderRequest, String username) {
+        checkUsername(username);
      //   try {
      //       BookedProductsDto bookedProducts =
      //               warehouseClient.checkProductsQuantity(createOrderRequest.getShoppingCart());
@@ -39,5 +42,24 @@ public class OrderServiceImpl implements OrderService {
     //            throw e;
     //        }
    //     }
+    }
+
+    @Override
+    public List<OrderDto> getOrdersOfUser(String username, Integer page, Integer size) {
+        checkUsername(username);
+
+        Sort sortByCreated = Sort.by(Sort.Direction.DESC, "created");
+
+        PageRequest pageRequest = PageRequest.of(page, size, sortByCreated);
+
+        return orderRepository.findAllByOwner(username, pageRequest).stream()
+                .map(OrderMapper::mapToDto)
+                .toList();
+    }
+
+    private void checkUsername(String username) {
+        if (username.isBlank()) {
+            throw new AuthorizationException("Имя пользователя не должно быть пустым");
+        }
     }
 }
