@@ -10,7 +10,7 @@ import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
 import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
-import ru.practicum.enums.QuantityState;
+import ru.practicum.enums.store.QuantityState;
 import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
