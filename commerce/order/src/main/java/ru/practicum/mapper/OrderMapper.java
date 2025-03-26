@@ -12,16 +12,16 @@ import java.time.LocalDateTime;
 @UtilityClass
 public class OrderMapper {
 
-    public Order mapToOrder(CreateNewOrderRequest request, String username) {
+    public Order mapToOrder(CreateNewOrderRequest request, String username, BookedProductsDto bookedProducts) {
         return Order.builder()
                 .state(OrderState.NEW)
                 .shoppingCartId(request.getShoppingCart().getShoppingCartId())
                 .products(request.getShoppingCart().getProducts())
                 .owner(username)
                 .created(LocalDateTime.now())
-              //  .deliveryVolume(bookedProducts.getDeliveryVolume())
-              //  .deliveryWeight(bookedProducts.getDeliveryWeight())
-             //   .fragile(bookedProducts.getFragile())
+                .deliveryVolume(bookedProducts.getDeliveryVolume())
+                .deliveryWeight(bookedProducts.getDeliveryWeight())
+                .fragile(bookedProducts.getFragile())
                 .build();
     }
 

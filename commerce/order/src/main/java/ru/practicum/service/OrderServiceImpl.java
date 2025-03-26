@@ -1,5 +1,6 @@
 package ru.practicum.service;
 
+import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.PageRequest;
@@ -9,12 +10,15 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.order.CreateNewOrderRequest;
 import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.order.ProductReturnRequest;
+import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.AuthorizationException;
 import ru.practicum.exceptions.NoOrderFoundException;
 import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.feign_client.WarehouseClient;
+import ru.practicum.feign_client.exception.ProductInShoppingCartLowQuantityInWarehouseException;
+import ru.practicum.feign_client.exception.ProductNotFoundInWarehouseException;
 import ru.practicum.mapper.OrderMapper;
 import ru.practicum.model.Order;
 import ru.practicum.repository.OrderRepository;
@@ -36,21 +40,22 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto createNewOrder(CreateNewOrderRequest createOrderRequest, String username) {
         checkUsername(username);
-        //   try {
-        //       BookedProductsDto bookedProducts =
-        //               warehouseClient.checkProductsQuantity(createOrderRequest.getShoppingCart());
+        try {
+            BookedProductsDto bookedProducts = warehouseClient
+                    .checkProductsQuantity(createOrderRequest.getShoppingCart());
 
-        log.info("Сохраняем информацию о заказе в БД");
-        return OrderMapper.mapToDto(orderRepository.save(OrderMapper.mapToOrder(createOrderRequest, username)));
-        //    } catch (FeignException e) {
-        //        if (e.status() == 404) {
-        //             throw new ProductNotFoundInWarehouseException(e.getMessage());
-        //        } else if (e.status() == 400) {
-        //            throw new ProductInShoppingCartLowQuantityInWarehouseException(e.getMessage());
-        //        } else {
-        //            throw e;
-        //        }
-        //     }
+            log.info("Сохраняем информацию о заказе в БД");
+            return OrderMapper.mapToDto(orderRepository.save(OrderMapper
+                    .mapToOrder(createOrderRequest, username, bookedProducts)));
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new ProductNotFoundInWarehouseException(e.getMessage());
+            } else if (e.status() == 400) {
+                throw new ProductInShoppingCartLowQuantityInWarehouseException(e.getMessage());
+            } else {
+                throw e;
+            }
+        }
     }
 
     @Override

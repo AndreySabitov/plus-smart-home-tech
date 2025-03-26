@@ -100,6 +100,7 @@ public class WarehouseServiceImpl implements WarehouseService {
                 throw new ProductNotFoundInWarehouseException(String.format("Товара с id = %s нет на складе", id));
             }
         });
+        log.info("Прошли проверку что такие товары есть на складе");
 
         cartProducts.forEach((key, value) -> {
             if (warehouseProducts.get(key).getQuantity() < value) {
@@ -107,12 +108,14 @@ public class WarehouseServiceImpl implements WarehouseService {
                         (String.format("Товара с id = %s не хватает на складе", key));
             }
         });
+        log.info("Прошли проверку что товаров хватает на складе");
 
         return getBookedProducts(warehouseProducts.values(), cartProducts);
     }
 
     private BookedProductsDto getBookedProducts(Collection<WarehouseProduct> productList,
                                                 Map<UUID, Long> cartProducts) {
+        log.info("Рассчитываем параметры заказа");
         return BookedProductsDto.builder()
                 .fragile(productList.stream().anyMatch(WarehouseProduct::getFragile))
                 .deliveryWeight(productList.stream()
