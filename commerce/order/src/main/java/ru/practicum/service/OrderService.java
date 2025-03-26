@@ -1,5 +1,7 @@
 package ru.practicum.service;
 
+import jakarta.validation.constraints.NotNull;
+import org.springframework.web.bind.annotation.RequestBody;
 import ru.practicum.dto.order.CreateNewOrderRequest;
 import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.order.ProductReturnRequest;
@@ -21,4 +23,14 @@ public interface OrderService {
     OrderDto sendOrderToDelivery(UUID orderId);
 
     OrderDto changeStateToDeliveryFailed(UUID orderId);
+
+    OrderDto changeStateToCompleted(UUID orderId);
+
+    OrderDto calculateOrderTotalPrice(UUID orderId);
+
+    OrderDto calculateOrderDeliveryPrice(UUID orderId);
+
+    OrderDto sendOrderToAssembly(UUID orderId);
+
+    OrderDto changeOrderStateToAssemblyFailed(UUID orderId);
 }

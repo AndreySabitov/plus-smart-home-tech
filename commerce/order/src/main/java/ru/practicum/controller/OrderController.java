@@ -58,4 +58,29 @@ public class OrderController {
     public OrderDto changeStateToDeliveryFailed(@NotNull @RequestBody UUID orderId) {
         return orderService.changeStateToDeliveryFailed(orderId);
     }
+
+    @PostMapping("/completed")
+    public OrderDto changeStateToCompleted(@NotNull @RequestBody UUID orderId) {
+        return orderService.changeStateToCompleted(orderId);
+    }
+
+    @PostMapping("/calculate/total")
+    public OrderDto calculateOrderTotalPrice(@NotNull @RequestBody UUID orderId) {
+        return orderService.calculateOrderTotalPrice(orderId);
+    }
+
+    @PostMapping("/calculate/delivery")
+    public OrderDto calculateOrderDeliveryPrice(@NotNull @RequestBody UUID orderId) {
+        return orderService.calculateOrderDeliveryPrice(orderId);
+    }
+
+    @PostMapping("/assembly")
+    public OrderDto sendOrderToAssembly(@NotNull @RequestBody UUID orderId) {
+        return orderService.sendOrderToAssembly(orderId);
+    }
+
+    @PostMapping("/assembly/failed")
+    public OrderDto changeOrderStateToAssemblyFailed(@NotNull @RequestBody UUID orderId) {
+        return orderService.changeOrderStateToAssemblyFailed(orderId);
+    }
 }

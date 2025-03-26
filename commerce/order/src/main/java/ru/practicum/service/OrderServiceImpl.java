@@ -111,6 +111,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDto changeStateToPaymentFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
@@ -122,6 +123,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDto sendOrderToDelivery(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
@@ -133,10 +135,63 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional
     public OrderDto changeStateToDeliveryFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
         oldOrder.setState(OrderState.DELIVERY_FAILED);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto changeStateToCompleted(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        oldOrder.setState(OrderState.COMPLETED);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto calculateOrderTotalPrice(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        // тут логика по расчёту стоимости всех товаров
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto calculateOrderDeliveryPrice(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        // тут логика по расчёту стоимости доставки
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto sendOrderToAssembly(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        // логика по сборке: вычесть товары со склада в сервисе warehouse?
+
+        oldOrder.setState(OrderState.ASSEMBLED);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
+    @Override
+    @Transactional
+    public OrderDto changeOrderStateToAssemblyFailed(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        oldOrder.setState(OrderState.ASSEMBLY_FAILED);
 
         return OrderMapper.mapToDto(oldOrder);
     }
