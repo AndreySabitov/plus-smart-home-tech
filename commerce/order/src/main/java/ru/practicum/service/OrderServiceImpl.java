@@ -69,8 +69,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto returnOrder(ProductReturnRequest returnRequest) {
-        Order oldOrder = orderRepository.findById(returnRequest.getOrderId())
-                .orElseThrow(() -> new NoOrderFoundException("Заказ не найден"));
+        Order oldOrder = getOrder(returnRequest.getOrderId());
 
         if (oldOrder.getState() == OrderState.PRODUCT_RETURNED || oldOrder.getState() == OrderState.CANCELED) {
             throw new ValidationException("Заказ уже был возвращён или отменён");
@@ -97,9 +96,27 @@ public class OrderServiceImpl implements OrderService {
         return OrderMapper.mapToDto(oldOrder);
     }
 
+    @Override
+    @Transactional
+    public OrderDto payOrder(UUID orderId) {
+        Order oldOrder = getOrder(orderId);
+
+        oldOrder.setState(OrderState.ON_PAYMENT);
+
+        // тут будет логика по оплате заказа в сервисе payment
+
+        oldOrder.setState(OrderState.PAID);
+
+        return OrderMapper.mapToDto(oldOrder);
+    }
+
     private void checkUsername(String username) {
         if (username.isBlank()) {
             throw new AuthorizationException("Имя пользователя не должно быть пустым");
         }
+    }
+
+    private Order getOrder(UUID id) {
+        return orderRepository.findById(id).orElseThrow(() -> new NoOrderFoundException("Заказ не найден"));
     }
 }

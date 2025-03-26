@@ -1,6 +1,7 @@
 package ru.practicum.controller;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,7 @@ import ru.practicum.dto.order.ProductReturnRequest;
 import ru.practicum.service.OrderService;
 
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RestController
@@ -35,5 +37,10 @@ public class OrderController {
     @PostMapping("/return")
     public OrderDto returnOrder(@Valid @RequestBody ProductReturnRequest returnRequest) {
         return orderService.returnOrder(returnRequest);
+    }
+
+    @PostMapping("/payment")
+    public OrderDto payOrder(@NotNull @RequestBody UUID orderId) {
+        return orderService.payOrder(orderId);
     }
 }
