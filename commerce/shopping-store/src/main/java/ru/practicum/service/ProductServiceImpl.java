@@ -9,7 +9,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.store.*;
 import ru.practicum.enums.store.ProductCategory;
 import ru.practicum.enums.store.ProductState;
-import ru.practicum.exception.ProductNotFoundException;
+import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.exception.ValidationException;
 import ru.practicum.mapper.ProductMapper;
 import ru.practicum.model.Product;

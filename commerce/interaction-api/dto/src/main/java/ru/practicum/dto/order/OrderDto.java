@@ -1,5 +1,6 @@
 package ru.practicum.dto.order;
 
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,8 +14,10 @@ import java.util.UUID;
 @Getter
 @Builder
 public class OrderDto {
+    @NotNull
     UUID orderId;
     UUID shoppingCartId;
+    @NotNull
     Map<UUID, Long> products;
     UUID paymentId;
     UUID deliveryId;

@@ -7,7 +7,7 @@ import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
 import ru.practicum.feign_client.WarehouseClient;
-import ru.practicum.feign_client.exception.WarehouseServerUnavailable;
+import ru.practicum.feign_client.exception.warehouse.WarehouseServerUnavailable;
 
 @Component
 public class WarehouseClientFallback implements WarehouseClient {
