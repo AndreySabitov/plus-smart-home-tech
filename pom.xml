@@ -25,6 +25,7 @@
         <module>commerce/warehouse</module>
         <module>commerce/order</module>
         <module>commerce/payment</module>
+        <module>commerce/delivery</module>
     </modules>
 
     <properties>
