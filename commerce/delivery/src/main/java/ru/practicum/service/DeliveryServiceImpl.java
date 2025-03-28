@@ -58,11 +58,11 @@ public class DeliveryServiceImpl implements DeliveryService {
         } else if (warehouseAddress.getStreet().equals("ADDRESS_1")) {
             baseCost = baseCost * 2;
         }
-        if (orderDto.getFragile()) {
+        if (delivery.getFragile()) {
             baseCost = baseCost + baseCost * 0.2;
         }
-        baseCost = baseCost + orderDto.getDeliveryWeight() * 0.3;
-        baseCost = baseCost + orderDto.getDeliveryVolume() * 0.2;
+        baseCost = baseCost + delivery.getDeliveryWeight() * 0.3;
+        baseCost = baseCost + delivery.getDeliveryVolume() * 0.2;
         if (!delivery.getToAddress().getStreet().equals(warehouseAddress.getStreet())) {
             baseCost = baseCost + baseCost * 0.2;
         }

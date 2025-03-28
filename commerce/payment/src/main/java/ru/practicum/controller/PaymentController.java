@@ -35,12 +35,12 @@ public class PaymentController {
     }
 
     @PostMapping("/refund")
-    public void changePaymentStateToSuccess(@NotNull @RequestBody UUID paymentId) {
+    public void changePaymentStateToSuccess(@RequestBody UUID paymentId) {
         paymentService.changePaymentStateToSuccess(paymentId);
     }
 
     @PostMapping("/failed")
-    public void changePaymentStateToFailed(@NotNull @RequestBody UUID paymentId) {
+    public void changePaymentStateToFailed(@RequestBody UUID paymentId) {
         paymentService.changePaymentStateToFailed(paymentId);
     }
 }

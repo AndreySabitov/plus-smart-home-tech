@@ -40,47 +40,47 @@ public class OrderController {
     }
 
     @PostMapping("/payment")
-    public OrderDto payOrder(@NotNull @RequestBody UUID orderId) {
+    public OrderDto payOrder(@RequestBody UUID orderId) {
         return orderService.payOrder(orderId);
     }
 
     @PostMapping("/payment/failed")
-    public OrderDto payOrderFailed(@NotNull @RequestBody UUID orderId) {
+    public OrderDto payOrderFailed(@RequestBody UUID orderId) {
         return orderService.changeStateToPaymentFailed(orderId);
     }
 
     @PostMapping("/delivery")
-    public OrderDto sendOrderToDelivery(@NotNull @RequestBody UUID orderId) {
+    public OrderDto sendOrderToDelivery(@RequestBody UUID orderId) {
         return orderService.sendOrderToDelivery(orderId);
     }
 
     @PostMapping("/delivery/failed")
-    public OrderDto changeStateToDeliveryFailed(@NotNull @RequestBody UUID orderId) {
+    public OrderDto changeStateToDeliveryFailed(@RequestBody UUID orderId) {
         return orderService.changeStateToDeliveryFailed(orderId);
     }
 
     @PostMapping("/completed")
-    public OrderDto changeStateToCompleted(@NotNull @RequestBody UUID orderId) {
+    public OrderDto changeStateToCompleted(@RequestBody UUID orderId) {
         return orderService.changeStateToCompleted(orderId);
     }
 
     @PostMapping("/calculate/total")
-    public OrderDto calculateOrderTotalPrice(@NotNull @RequestBody UUID orderId) {
+    public OrderDto calculateOrderTotalPrice(@RequestBody UUID orderId) {
         return orderService.calculateOrderTotalPrice(orderId);
     }
 
     @PostMapping("/calculate/delivery")
-    public OrderDto calculateOrderDeliveryPrice(@NotNull @RequestBody UUID orderId) {
+    public OrderDto calculateOrderDeliveryPrice(@RequestBody UUID orderId) {
         return orderService.calculateOrderDeliveryPrice(orderId);
     }
 
     @PostMapping("/assembly")
-    public OrderDto sendOrderToAssembly(@NotNull @RequestBody UUID orderId) {
+    public OrderDto sendOrderToAssembly(@RequestBody UUID orderId) {
         return orderService.sendOrderToAssembly(orderId);
     }
 
     @PostMapping("/assembly/failed")
-    public OrderDto changeOrderStateToAssemblyFailed(@NotNull @RequestBody UUID orderId) {
+    public OrderDto changeOrderStateToAssemblyFailed(@RequestBody UUID orderId) {
         return orderService.changeOrderStateToAssemblyFailed(orderId);
     }
 }

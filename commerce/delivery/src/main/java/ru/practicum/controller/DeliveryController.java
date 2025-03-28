@@ -27,17 +27,17 @@ public class DeliveryController {
     }
 
     @PostMapping("/picked")
-    public void changeStateToInProgress(@NotNull @RequestBody UUID deliveryId) {
+    public void changeStateToInProgress(@RequestBody UUID deliveryId) {
         deliveryService.changeStateToInProgress(deliveryId);
     }
 
     @PostMapping("/successful")
-    public void changeStateToDelivered(@NotNull @RequestBody UUID deliveryId) {
+    public void changeStateToDelivered(@RequestBody UUID deliveryId) {
         deliveryService.changeStateToDelivered(deliveryId);
     }
 
     @PostMapping("/failed")
-    public void changeStateToFailed(@NotNull @RequestBody UUID deliveryId) {
+    public void changeStateToFailed(@RequestBody UUID deliveryId) {
         deliveryService.changeStateToFailed(deliveryId);
     }
 }

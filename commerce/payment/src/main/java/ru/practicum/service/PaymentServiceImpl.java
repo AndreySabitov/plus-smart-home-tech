@@ -85,6 +85,7 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
+    @Transactional
     public void changePaymentStateToFailed(UUID paymentId) {
         Payment oldPayment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NoPaymentFoundException("Сведений об оплате не найдено"));
