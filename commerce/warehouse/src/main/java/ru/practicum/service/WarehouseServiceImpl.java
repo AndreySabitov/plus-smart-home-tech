@@ -5,17 +5,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.address.AddressManager;
 import ru.practicum.dto.cart.ShoppingCartDto;
-import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.practicum.dto.warehouse.AddressDto;
-import ru.practicum.dto.warehouse.BookedProductsDto;
-import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.dto.warehouse.*;
 import ru.practicum.enums.store.QuantityState;
+import ru.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;
-import ru.practicum.address.AddressManager;
-import ru.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.mapper.WarehouseProductMapper;
 import ru.practicum.model.WarehouseProduct;
 import ru.practicum.repository.WarehouseRepository;
@@ -48,7 +45,12 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     public BookedProductsDto checkProductsQuantity(ShoppingCartDto shoppingCartDto) {
         log.info("Начало проверки достаточного количества товаров {} на складе", shoppingCartDto.getProducts());
-        return checkQuantity(shoppingCartDto);
+
+        Map<UUID, WarehouseProduct> warehouseProducts = repository
+                .findAllById(shoppingCartDto.getProducts().keySet()).stream()
+                .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
+
+        return checkQuantity(shoppingCartDto.getProducts(), warehouseProducts);
     }
 
     @Override
@@ -87,15 +89,27 @@ public class WarehouseServiceImpl implements WarehouseService {
                 .build();
     }
 
-    private BookedProductsDto checkQuantity(ShoppingCartDto shoppingCartDto) {
-        Map<UUID, Long> cartProducts = shoppingCartDto.getProducts();
-        Set<UUID> cartProductIds = cartProducts.keySet();
+    @Override
+    @Transactional
+    public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest assemblyRequest) {
+        //возможно нужна проверка что такой заказ существует
 
-        Map<UUID, WarehouseProduct> warehouseProducts = repository.findAllById(cartProductIds).stream()
+        Map<UUID, Long> assemblyProducts = assemblyRequest.getProducts();
+
+        Map<UUID, WarehouseProduct> warehouseProducts = repository.findAllById(assemblyProducts.keySet()).stream()
                 .collect(Collectors.toMap(WarehouseProduct::getProductId, Function.identity()));
 
+        BookedProductsDto bookedProducts = checkQuantity(assemblyProducts, warehouseProducts);
+
+        warehouseProducts.forEach((key, value) -> value.setQuantity(value.getQuantity() - assemblyProducts.get(key)));
+
+        return bookedProducts;
+    }
+
+    private BookedProductsDto checkQuantity(Map<UUID, Long> cartProducts,
+                                            Map<UUID, WarehouseProduct> warehouseProducts) {
         Set<UUID> productIds = warehouseProducts.keySet();
-        cartProductIds.forEach(id -> {
+        cartProducts.keySet().forEach(id -> {
             if (!productIds.contains(id)) {
                 throw new ProductNotFoundInWarehouseException(String.format("Товара с id = %s нет на складе", id));
             }

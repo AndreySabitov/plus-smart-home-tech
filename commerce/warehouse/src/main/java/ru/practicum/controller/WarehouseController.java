@@ -5,10 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 import ru.practicum.dto.cart.ShoppingCartDto;
-import ru.practicum.dto.warehouse.AddProductToWarehouseRequest;
-import ru.practicum.dto.warehouse.AddressDto;
-import ru.practicum.dto.warehouse.BookedProductsDto;
-import ru.practicum.dto.warehouse.NewProductInWarehouseRequest;
+import ru.practicum.dto.warehouse.*;
 import ru.practicum.service.WarehouseService;
 
 @Slf4j
@@ -41,5 +38,13 @@ public class WarehouseController {
     public AddressDto getWarehouseAddress() {
         log.info("Запрос на получение адреса склада");
         return service.getWarehouseAddress();
+    }
+
+    @PostMapping("/assembly")
+    public BookedProductsDto assemblyProductsForOrder(
+            @Valid @RequestBody AssemblyProductsForOrderRequest assemblyRequest) {
+        log.info("Получили запрос на сборку заказа {} с продуктами {}", assemblyRequest.getOrderId(),
+                assemblyRequest.getProducts());
+        return service.assemblyProductsForOrder(assemblyRequest);
     }
 }
