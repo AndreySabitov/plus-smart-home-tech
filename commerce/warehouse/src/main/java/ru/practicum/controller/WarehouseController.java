@@ -8,6 +8,9 @@ import ru.practicum.dto.cart.ShoppingCartDto;
 import ru.practicum.dto.warehouse.*;
 import ru.practicum.service.WarehouseService;
 
+import java.util.Map;
+import java.util.UUID;
+
 @Slf4j
 @RestController
 @RequestMapping("/api/v1/warehouse")
@@ -46,5 +49,16 @@ public class WarehouseController {
         log.info("Получили запрос на сборку заказа {} с продуктами {}", assemblyRequest.getOrderId(),
                 assemblyRequest.getProducts());
         return service.assemblyProductsForOrder(assemblyRequest);
+    }
+
+    @PostMapping("/shipped")
+    public void shipProductsToDelivery(@Valid @RequestBody ShippedToDeliveryRequest request) {
+        log.info("Запрос на передачу в доставку заказа {}", request.getOrderId());
+        service.shipProductsToDelivery(request);
+    }
+
+    @PostMapping("/return")
+    public void returnProducts(@RequestBody Map<UUID, Long> products) {
+        service.returnProducts(products);
     }
 }
