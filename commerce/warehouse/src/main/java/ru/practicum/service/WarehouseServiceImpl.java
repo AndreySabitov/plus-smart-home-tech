@@ -9,7 +9,7 @@ import ru.practicum.address.AddressManager;
 import ru.practicum.dto.cart.ShoppingCartDto;
 import ru.practicum.dto.warehouse.*;
 import ru.practicum.enums.store.QuantityState;
-import ru.practicum.exceptions.OrderBookingNotFoundException;
+import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
 import ru.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
@@ -96,8 +96,6 @@ public class WarehouseServiceImpl implements WarehouseService {
     @Override
     @Transactional
     public BookedProductsDto assemblyProductsForOrder(AssemblyProductsForOrderRequest assemblyRequest) {
-        //возможно нужна проверка что такой заказ существует
-
         Map<UUID, Long> assemblyProducts = assemblyRequest.getProducts();
 
         Map<UUID, WarehouseProduct> warehouseProducts = warehouseRepository

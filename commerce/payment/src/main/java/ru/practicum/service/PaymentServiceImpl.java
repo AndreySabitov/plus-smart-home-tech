@@ -8,7 +8,9 @@ import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.payment.PaymentDto;
 import ru.practicum.dto.store.ProductDto;
 import ru.practicum.exceptions.NoPaymentFoundException;
-import ru.practicum.exceptions.NotEnoughInfoInOrderToCalculateException;
+import ru.practicum.feign_client.OrderClient;
+import ru.practicum.feign_client.exception.order.NoOrderFoundException;
+import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
 import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.mapper.PaymentMapper;
@@ -26,6 +28,7 @@ import java.util.stream.Collectors;
 public class PaymentServiceImpl implements PaymentService {
     private final PaymentRepository paymentRepository;
     private final StoreClient storeClient;
+    private final OrderClient orderClient;
 
     @Override
     @Transactional
@@ -92,6 +95,12 @@ public class PaymentServiceImpl implements PaymentService {
 
         oldPayment.setState(PaymentState.FAILED);
 
-        // вызвать изменение в сервисе заказов - оплата не прошла
+        try {
+            orderClient.payOrderFailed(oldPayment.getOrderId());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new NoOrderFoundException(e.getMessage());
+            }
+        }
     }
 }

@@ -40,6 +40,10 @@ public class Order {
     @Column(name = "delivery_id")
     UUID deliveryId;
 
+    @ManyToOne
+    @JoinColumn(name = "delivery_address_id")
+    Address deliveryAddress;
+
     @Enumerated(value = EnumType.STRING)
     OrderState state;
 

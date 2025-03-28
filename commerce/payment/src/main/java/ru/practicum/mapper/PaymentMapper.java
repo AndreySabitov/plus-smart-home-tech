@@ -15,6 +15,7 @@ public class PaymentMapper {
                 .deliveryTotal(dto.getDeliveryPrice())
                 .productsTotal(dto.getProductPrice())
                 .state(PaymentState.PENDING)
+                .orderId(dto.getOrderId())
                 .build();
     }
 

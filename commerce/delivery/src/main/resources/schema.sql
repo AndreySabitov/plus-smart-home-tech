@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS delivery (
     state VARCHAR(50) NOT NULL,
     from_address_id UUID REFERENCES addresses(id),
     to_address_id UUID REFERENCES addresses(id),
-    delivery_weight DECIMAL NOT NULL,
-    delivery_volume DECIMAL NOT NULL,
-    fragile BOOLEAN NOT NULL
+    delivery_weight DECIMAL,
+    delivery_volume DECIMAL,
+    fragile BOOLEAN
 );

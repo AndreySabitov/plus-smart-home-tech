@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.exceptions.NoDeliveryFoundException;
 import ru.practicum.exceptions.ValidationException;
+import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
 
 @Slf4j
 @RestControllerAdvice
@@ -28,6 +29,12 @@ public class ErrorHandler {
     @ExceptionHandler
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleNoDeliveryFound(final NoDeliveryFoundException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleOrderBookingNotFound(final OrderBookingNotFoundException e) {
         return new ErrorResponse(e.getMessage());
     }
 }

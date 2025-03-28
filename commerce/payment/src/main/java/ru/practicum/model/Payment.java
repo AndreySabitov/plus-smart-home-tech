@@ -21,6 +21,9 @@ public class Payment {
     @Column(name = "id")
     UUID paymentId;
 
+    @Column(name = "order_id")
+    UUID orderId;
+
     @Column(name = "total_payment")
     Double totalPayment;
 

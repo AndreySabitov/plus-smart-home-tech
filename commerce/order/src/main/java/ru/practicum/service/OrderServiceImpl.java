@@ -7,20 +7,30 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.dto.delivery.DeliveryDto;
 import ru.practicum.dto.order.CreateNewOrderRequest;
 import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.order.ProductReturnRequest;
+import ru.practicum.dto.payment.PaymentDto;
+import ru.practicum.dto.warehouse.AssemblyProductsForOrderRequest;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.AuthorizationException;
-import ru.practicum.exceptions.NoOrderFoundException;
+import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
+import ru.practicum.feign_client.DeliveryClient;
+import ru.practicum.feign_client.PaymentClient;
 import ru.practicum.feign_client.WarehouseClient;
+import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
+import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;
+import ru.practicum.mapper.AddressMapper;
 import ru.practicum.mapper.OrderMapper;
+import ru.practicum.model.Address;
 import ru.practicum.model.Order;
+import ru.practicum.repository.AddressRepository;
 import ru.practicum.repository.OrderRepository;
 
 import java.util.List;
@@ -34,7 +44,10 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
+    private final AddressRepository addressRepository;
     private final WarehouseClient warehouseClient;
+    private final PaymentClient paymentClient;
+    private final DeliveryClient deliveryClient;
 
     @Override
     @Transactional
@@ -44,9 +57,12 @@ public class OrderServiceImpl implements OrderService {
             BookedProductsDto bookedProducts = warehouseClient
                     .checkProductsQuantity(createOrderRequest.getShoppingCart());
 
+            Address deliveryAddress = addressRepository.save(AddressMapper
+                    .mapToAddress(createOrderRequest.getDeliveryAddress()));
+
             log.info("Сохраняем информацию о заказе в БД");
             return OrderMapper.mapToDto(orderRepository.save(OrderMapper
-                    .mapToOrder(createOrderRequest, username, bookedProducts)));
+                    .mapToOrder(createOrderRequest, username, bookedProducts, deliveryAddress)));
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new ProductNotFoundInWarehouseException(e.getMessage());
@@ -95,6 +111,13 @@ public class OrderServiceImpl implements OrderService {
             }
         });
 
+        try {
+            warehouseClient.returnProducts(returnProducts);
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new ProductNotFoundInWarehouseException(e.getMessage());
+            }
+        }
 
         oldOrder.setState(OrderState.PRODUCT_RETURNED);
 
@@ -108,9 +131,14 @@ public class OrderServiceImpl implements OrderService {
 
         oldOrder.setState(OrderState.ON_PAYMENT);
 
-        // тут будет логика по оплате заказа в сервисе payment
-
-        oldOrder.setState(OrderState.PAID);
+        try {
+            PaymentDto paymentDto = paymentClient.makingPaymentForOrder(OrderMapper.mapToDto(oldOrder));
+            oldOrder.setPaymentId(paymentDto.getPaymentId());
+        } catch (FeignException e) {
+            if (e.status() == 400) {
+                throw new NotEnoughInfoInOrderToCalculateException(e.getMessage());
+            }
+        }
 
         return OrderMapper.mapToDto(oldOrder);
     }
@@ -119,8 +147,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto changeStateToPaymentFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
-
-        // возможно нужно проверить статус
 
         oldOrder.setState(OrderState.PAYMENT_FAILED);
 
@@ -132,8 +158,13 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto sendOrderToDelivery(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
-        // тут будет логика по обработке заказа сервисом delivery
+        DeliveryDto deliveryDto = deliveryClient.createNewDelivery(DeliveryDto.builder()
+                .orderId(orderId)
+                .fromAddress(warehouseClient.getWarehouseAddress())
+                .toAddress(AddressMapper.mapToDto(oldOrder.getDeliveryAddress()))
+                .build());
 
+        oldOrder.setDeliveryId(deliveryDto.getDeliveryId());
         oldOrder.setState(OrderState.ON_DELIVERY);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -164,7 +195,21 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto calculateOrderTotalPrice(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
-        // тут логика по расчёту стоимости всех товаров
+        try {
+            Double productsPrice = paymentClient.calculateProductsCost(OrderMapper.mapToDto(oldOrder));
+            oldOrder.setProductPrice(productsPrice);
+
+            Double orderTotalPrice = paymentClient.calculateTotalCost(OrderMapper.mapToDto(oldOrder));
+            oldOrder.setTotalPrice(orderTotalPrice);
+        } catch (FeignException e) {
+            if (e.status() == 400) {
+                throw new NotEnoughInfoInOrderToCalculateException(e.getMessage());
+            } else if (e.status() == 404) {
+                throw new ProductNotFoundException(e.getMessage());
+            } else {
+                throw e;
+            }
+        }
 
         return OrderMapper.mapToDto(oldOrder);
     }
@@ -174,7 +219,16 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto calculateOrderDeliveryPrice(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
-        // тут логика по расчёту стоимости доставки
+        try {
+            Double deliveryPrice = deliveryClient.calculateDeliveryCost(OrderMapper.mapToDto(oldOrder));
+            oldOrder.setDeliveryPrice(deliveryPrice);
+        } catch (FeignException e) {
+            if (e.status() == 400) {
+                throw new ValidationException("Не задан id доставки");
+            } else {
+                throw e;
+            }
+        }
 
         return OrderMapper.mapToDto(oldOrder);
     }
@@ -184,7 +238,18 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto sendOrderToAssembly(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
-        // логика по сборке: вычесть товары со склада в сервисе warehouse?
+        try {
+            warehouseClient.assemblyProductsForOrder(AssemblyProductsForOrderRequest.builder()
+                    .orderId(oldOrder.getOrderId())
+                    .products(oldOrder.getProducts())
+                    .build());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new ProductNotFoundInWarehouseException(e.getMessage());
+            } else if (e.status() == 400) {
+                throw new ProductInShoppingCartLowQuantityInWarehouseException(e.getMessage());
+            }
+        }
 
         oldOrder.setState(OrderState.ASSEMBLED);
 

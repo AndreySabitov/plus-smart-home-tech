@@ -6,7 +6,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.exceptions.OrderBookingNotFoundException;
+import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
 import ru.practicum.exceptions.SpecifiedProductAlreadyInWarehouseException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;

@@ -5,7 +5,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.exceptions.NotEnoughInfoInOrderToCalculateException;
+import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 
 @Slf4j

@@ -1,11 +1,21 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+CREATE TABLE IF NOT  EXISTS delivery_address (
+    id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
+    country VARCHAR(100),
+    city VARCHAR(100),
+    street VARCHAR(100),
+    house VARCHAR(100),
+    flat VARCHAR(100)
+);
+
 CREATE TABLE IF NOT EXISTS orders (
     id UUID DEFAULT uuid_generate_v4 () PRIMARY KEY,
     owner VARCHAR(50) NOT NULL,
     shopping_cart_id UUID,
     payment_id UUID,
     delivery_id UUID,
+    delivery_address_id UUID REFERENCES delivery_address(id),
     state VARCHAR(50),
     delivery_weight DECIMAL,
     delivery_volume DECIMAL,
