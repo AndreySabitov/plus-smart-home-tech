@@ -3,7 +3,6 @@ package ru.practicum.service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.ILoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.order.OrderDto;
@@ -12,9 +11,9 @@ import ru.practicum.dto.store.ProductDto;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.NoPaymentFoundException;
 import ru.practicum.feign_client.OrderClient;
+import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
-import ru.practicum.feign_client.StoreClient;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.mapper.PaymentMapper;
 import ru.practicum.model.Payment;
@@ -37,8 +36,7 @@ public class PaymentServiceImpl implements PaymentService {
     @Override
     @Transactional
     public PaymentDto makingPaymentForOrder(OrderDto orderDto) {
-        if (orderDto.getProductPrice() == null || orderDto.getDeliveryPrice() == null ||
-                orderDto.getTotalPrice() == null) {
+        if (orderDto.getTotalPrice() == null) {
             throw new NotEnoughInfoInOrderToCalculateException("Для оплаты не хватает информации в заказе");
         }
 

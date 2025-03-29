@@ -54,6 +54,11 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto createNewOrder(CreateNewOrderRequest createOrderRequest, String username) {
         checkUsername(username);
+
+        if (createOrderRequest.getShoppingCart().getProducts().isEmpty()) {
+            throw new ValidationException("Для оформления заказа нужно добавить хотябы 1 товар в корзину");
+        }
+
         log.info("Создаём заказ для корзины с id = {}", createOrderRequest.getShoppingCart().getShoppingCartId());
         try {
             log.info("Проверяем наличие товаров на складе");
@@ -94,6 +99,10 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto returnOrder(ProductReturnRequest returnRequest) {
+        if (returnRequest.getProducts().isEmpty()) {
+            throw new ValidationException("Добавьте товары для возврата");
+        }
+
         log.info("Возврат товаров {} из заказа orderId = {}", returnRequest.getProducts(), returnRequest.getOrderId());
         Order oldOrder = getOrder(returnRequest.getOrderId());
 
