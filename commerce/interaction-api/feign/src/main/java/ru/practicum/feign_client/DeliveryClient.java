@@ -20,7 +20,7 @@ public interface DeliveryClient {
     Double calculateDeliveryCost(@RequestBody OrderDto orderDto) throws FeignException;
 
     @PostMapping("/picked")
-    void changeStateToInProgress(@RequestBody UUID deliveryId) throws FeignException;
+    void sendProductsToDelivery(@RequestBody UUID deliveryId) throws FeignException;
 
     @PostMapping("/successful")
     void changeStateToDelivered(@RequestBody UUID deliveryId) throws FeignException;

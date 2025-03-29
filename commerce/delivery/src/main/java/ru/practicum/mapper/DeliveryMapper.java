@@ -2,7 +2,6 @@ package ru.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.delivery.DeliveryDto;
-import ru.practicum.dto.order.OrderDto;
 import ru.practicum.enums.delivery.DeliveryState;
 import ru.practicum.model.Address;
 import ru.practicum.model.Delivery;

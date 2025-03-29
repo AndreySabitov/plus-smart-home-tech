@@ -11,6 +11,7 @@ import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
+import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;
 
 @Slf4j
@@ -64,5 +65,11 @@ public class ErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse handleProductNotFound(final ProductNotFoundException e) {
         return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse handleOrderBookingNotFound(final OrderBookingNotFoundException e) {
+        return  new ErrorResponse(e.getMessage());
     }
 }

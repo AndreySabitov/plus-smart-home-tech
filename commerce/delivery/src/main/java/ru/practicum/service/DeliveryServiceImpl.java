@@ -2,6 +2,7 @@ package ru.practicum.service;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.delivery.DeliveryDto;
@@ -9,6 +10,7 @@ import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.warehouse.AddressDto;
 import ru.practicum.dto.warehouse.ShippedToDeliveryRequest;
 import ru.practicum.enums.delivery.DeliveryState;
+import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.NoDeliveryFoundException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.feign_client.OrderClient;
@@ -23,6 +25,7 @@ import ru.practicum.repository.DeliveryRepository;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -38,6 +41,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         Address fromAddress = addressRepository.save(AddressMapper.mapToAddress(deliveryDto.getFromAddress()));
         Address toAddress = addressRepository.save(AddressMapper.mapToAddress(deliveryDto.getToAddress()));
 
+        log.info("Создаём новую доставку из склада по адресу {} до заказчика по адресу {}", fromAddress, toAddress);
         return DeliveryMapper.mapToDto(deliveryRepository.save(DeliveryMapper.mapToDelivery(deliveryDto, fromAddress,
                 toAddress)));
     }
@@ -55,6 +59,7 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setDeliveryVolume(orderDto.getDeliveryVolume());
         delivery.setFragile(orderDto.getFragile());
 
+        log.info("Рассчитываем стоимость доставки для заказа orderId = {}", orderDto.getOrderId());
         double baseCost = 5.0;
         AddressDto warehouseAddress = AddressMapper.mapToDto(delivery.getFromAddress());
         if (warehouseAddress.getStreet().equals("ADDRESS_2")) {
@@ -67,19 +72,24 @@ public class DeliveryServiceImpl implements DeliveryService {
         }
         baseCost = baseCost + orderDto.getDeliveryWeight() * 0.3;
         baseCost = baseCost + orderDto.getDeliveryVolume() * 0.2;
-        if (!delivery.getToAddress().getStreet().equals(warehouseAddress.getStreet())) {
+        Address deliveryAddress = delivery.getToAddress();
+        if (!deliveryAddress.getStreet().equals(warehouseAddress.getStreet()) &&
+                !deliveryAddress.getCity().equals(warehouseAddress.getCity()) &&
+                !deliveryAddress.getCountry().equals(warehouseAddress.getCountry())) {
             baseCost = baseCost + baseCost * 0.2;
         }
+        log.info("Получили стоимость доставки = {}", baseCost);
 
         return baseCost;
     }
 
     @Override
     @Transactional
-    public void changeStateToInProgress(UUID deliveryId) {
+    public void sendProductsToDelivery(UUID deliveryId) {
         Delivery delivery = getDeliveryById(deliveryId);
 
         try {
+            log.info("Отправляем запрос на склад для передачи товаров в доставку");
             warehouseClient.shipProductsToDelivery(ShippedToDeliveryRequest.builder()
                     .deliveryId(deliveryId)
                     .orderId(delivery.getOrderId())
@@ -90,6 +100,7 @@ public class DeliveryServiceImpl implements DeliveryService {
             }
         }
 
+        log.info("Меняем статус доставки на {}", DeliveryState.IN_PROGRESS);
         delivery.setState(DeliveryState.IN_PROGRESS);
     }
 
@@ -98,17 +109,21 @@ public class DeliveryServiceImpl implements DeliveryService {
     public void changeStateToDelivered(UUID deliveryId) {
         Delivery delivery = getDeliveryById(deliveryId);
 
+        log.info("Меняем статус доставки на {}", DeliveryState.DELIVERED);
         delivery.setState(DeliveryState.DELIVERED);
 
-        //сменить статус заказа на DELIVERED в сервисе order
+        log.info("Отправляем запрос на изменение статуса заказа на {}", OrderState.DELIVERED);
+        orderClient.sendOrderToDelivery(delivery.getOrderId());
     }
 
     @Override
     public void changeStateToFailed(UUID deliveryId) {
         Delivery delivery = getDeliveryById(deliveryId);
 
+        log.info("Меняем статус доставки на {}", DeliveryState.FAILED);
         delivery.setState(DeliveryState.FAILED);
 
+        log.info("Отправляем запрос на изменение статуса заказа на {}", OrderState.DELIVERY_FAILED);
         orderClient.changeStateToDeliveryFailed(delivery.getOrderId());
     }
 

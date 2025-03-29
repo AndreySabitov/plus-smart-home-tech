@@ -16,15 +16,16 @@ import ru.practicum.dto.warehouse.AssemblyProductsForOrderRequest;
 import ru.practicum.dto.warehouse.BookedProductsDto;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.AuthorizationException;
-import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.feign_client.DeliveryClient;
 import ru.practicum.feign_client.PaymentClient;
 import ru.practicum.feign_client.WarehouseClient;
+import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
+import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;
 import ru.practicum.mapper.AddressMapper;
 import ru.practicum.mapper.OrderMapper;
@@ -53,10 +54,13 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto createNewOrder(CreateNewOrderRequest createOrderRequest, String username) {
         checkUsername(username);
+        log.info("Создаём заказ для корзины с id = {}", createOrderRequest.getShoppingCart().getShoppingCartId());
         try {
+            log.info("Проверяем наличие товаров на складе");
             BookedProductsDto bookedProducts = warehouseClient
                     .checkProductsQuantity(createOrderRequest.getShoppingCart());
 
+            log.info("Сохраняем адрес доставки");
             Address deliveryAddress = addressRepository.save(AddressMapper
                     .mapToAddress(createOrderRequest.getDeliveryAddress()));
 
@@ -90,6 +94,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     public OrderDto returnOrder(ProductReturnRequest returnRequest) {
+        log.info("Возврат товаров {} из заказа orderId = {}", returnRequest.getProducts(), returnRequest.getOrderId());
         Order oldOrder = getOrder(returnRequest.getOrderId());
 
         if (oldOrder.getState() == OrderState.PRODUCT_RETURNED || oldOrder.getState() == OrderState.CANCELED) {
@@ -99,19 +104,21 @@ public class OrderServiceImpl implements OrderService {
         Map<UUID, Long> orderProducts = oldOrder.getProducts();
         Map<UUID, Long> returnProducts = returnRequest.getProducts();
 
+        log.info("Проверка что все товары из заказа предоставлены к возврату");
         if (!orderProducts.keySet().stream()
                 .filter(p -> !returnProducts.containsKey(p))
                 .toList().isEmpty()) {
             throw new NoProductInOrderException("Не все продукты предоставлены для возврата");
         }
+        log.info("Проверка все товары возвращаются в нужном количестве");
         orderProducts.forEach((key, value) -> {
             if (!Objects.equals(value, returnProducts.get(key))) {
-                throw new ValidationException("Не совпадает количество товара с id = %s для возврата"
-                        .formatted(key));
+                throw new ValidationException("Не совпадает количество товара с id = %s для возврата".formatted(key));
             }
         });
 
         try {
+            log.info("Отправляем запрос на возвращение товаров на склад");
             warehouseClient.returnProducts(returnProducts);
         } catch (FeignException e) {
             if (e.status() == 404) {
@@ -119,6 +126,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
 
+        log.info("Меняем статус заказа на {}", OrderState.PRODUCT_RETURNED);
         oldOrder.setState(OrderState.PRODUCT_RETURNED);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -129,9 +137,25 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto payOrder(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
+        if (oldOrder.getState() == OrderState.PAID) {
+            log.info("заказ уже оплачен");
+            return OrderMapper.mapToDto(oldOrder);
+        }
+
+        if (oldOrder.getState() == OrderState.ON_PAYMENT) {
+            log.info("Успешная оплата заказа");
+            oldOrder.setState(OrderState.PAID);
+            return OrderMapper.mapToDto(oldOrder);
+        }
+
+        if (oldOrder.getState() != OrderState.ASSEMBLED) {
+            throw new ValidationException("Заказ должен быть собран перед оплатой");
+        }
+
         oldOrder.setState(OrderState.ON_PAYMENT);
 
         try {
+            log.info("Отправляем заказ на оплату");
             PaymentDto paymentDto = paymentClient.makingPaymentForOrder(OrderMapper.mapToDto(oldOrder));
             oldOrder.setPaymentId(paymentDto.getPaymentId());
         } catch (FeignException e) {
@@ -148,6 +172,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto changeStateToPaymentFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
+        log.info("Меняем статус заказа на {}", OrderState.PAYMENT_FAILED);
         oldOrder.setState(OrderState.PAYMENT_FAILED);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -158,13 +183,30 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto sendOrderToDelivery(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
-        DeliveryDto deliveryDto = deliveryClient.createNewDelivery(DeliveryDto.builder()
-                .orderId(orderId)
-                .fromAddress(warehouseClient.getWarehouseAddress())
-                .toAddress(AddressMapper.mapToDto(oldOrder.getDeliveryAddress()))
-                .build());
+        if (oldOrder.getState() == OrderState.DELIVERED) {
+            log.info("Заказ уже доставлен");
+            return OrderMapper.mapToDto(oldOrder);
+        }
 
-        oldOrder.setDeliveryId(deliveryDto.getDeliveryId());
+        if (oldOrder.getState() == OrderState.ON_DELIVERY) {
+            oldOrder.setState(OrderState.DELIVERED);
+            return OrderMapper.mapToDto(oldOrder);
+        }
+
+        if (oldOrder.getState() != OrderState.PAID) {
+            throw new ValidationException("Перед доставкой заказ должен быть оплачен");
+        }
+
+        try {
+            log.info("Отправляем запрос на передачу заказа {} в доставку", oldOrder.getOrderId());
+            deliveryClient.sendProductsToDelivery(oldOrder.getDeliveryId());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new OrderBookingNotFoundException(e.getMessage());
+            }
+        }
+
+        log.info("Меняем статус заказа {} на {}", orderId, OrderState.ON_DELIVERY);
         oldOrder.setState(OrderState.ON_DELIVERY);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -175,6 +217,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto changeStateToDeliveryFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
+        log.info("Меняем статус заказа {} на {}", orderId, OrderState.DELIVERY_FAILED);
         oldOrder.setState(OrderState.DELIVERY_FAILED);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -185,6 +228,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto changeStateToCompleted(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
+        log.info("Меняем статус заказа {} на {}", orderId, OrderState.COMPLETED);
         oldOrder.setState(OrderState.COMPLETED);
 
         return OrderMapper.mapToDto(oldOrder);
@@ -196,18 +240,20 @@ public class OrderServiceImpl implements OrderService {
         Order oldOrder = getOrder(orderId);
 
         try {
+            log.info("Отправляем запрос на расчёт стоимости продуктов в заказе");
             Double productsPrice = paymentClient.calculateProductsCost(OrderMapper.mapToDto(oldOrder));
+            log.info("Получили стоимость продуктов {}", productsPrice);
             oldOrder.setProductPrice(productsPrice);
 
+            log.info("Отправляем запрос на расчёт полной стоимости заказа");
             Double orderTotalPrice = paymentClient.calculateTotalCost(OrderMapper.mapToDto(oldOrder));
+            log.info("Полная стоимость заказа = {}", orderTotalPrice);
             oldOrder.setTotalPrice(orderTotalPrice);
         } catch (FeignException e) {
             if (e.status() == 400) {
                 throw new NotEnoughInfoInOrderToCalculateException(e.getMessage());
             } else if (e.status() == 404) {
                 throw new ProductNotFoundException(e.getMessage());
-            } else {
-                throw e;
             }
         }
 
@@ -220,13 +266,21 @@ public class OrderServiceImpl implements OrderService {
         Order oldOrder = getOrder(orderId);
 
         try {
+            log.info("Отправляем запрос на создание доставки для заказа {}", orderId);
+            DeliveryDto deliveryDto = deliveryClient.createNewDelivery(DeliveryDto.builder()
+                    .orderId(orderId)
+                    .fromAddress(warehouseClient.getWarehouseAddress())
+                    .toAddress(AddressMapper.mapToDto(oldOrder.getDeliveryAddress()))
+                    .build());
+
+            oldOrder.setDeliveryId(deliveryDto.getDeliveryId());
+
+            log.info("Отправляем запрос на расчёт стоимости доставки заказа {}", orderId);
             Double deliveryPrice = deliveryClient.calculateDeliveryCost(OrderMapper.mapToDto(oldOrder));
             oldOrder.setDeliveryPrice(deliveryPrice);
         } catch (FeignException e) {
             if (e.status() == 400) {
                 throw new ValidationException("Не задан id доставки");
-            } else {
-                throw e;
             }
         }
 
@@ -239,6 +293,7 @@ public class OrderServiceImpl implements OrderService {
         Order oldOrder = getOrder(orderId);
 
         try {
+            log.info("Отправляем запрос на сборку заказа {} на складе", orderId);
             warehouseClient.assemblyProductsForOrder(AssemblyProductsForOrderRequest.builder()
                     .orderId(oldOrder.getOrderId())
                     .products(oldOrder.getProducts())
@@ -261,6 +316,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderDto changeOrderStateToAssemblyFailed(UUID orderId) {
         Order oldOrder = getOrder(orderId);
 
+        log.info("Меняем статус заказа на {}", OrderState.ASSEMBLY_FAILED);
         oldOrder.setState(OrderState.ASSEMBLY_FAILED);
 
         return OrderMapper.mapToDto(oldOrder);

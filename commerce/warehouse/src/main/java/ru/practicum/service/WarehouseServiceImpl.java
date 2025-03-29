@@ -120,6 +120,8 @@ public class WarehouseServiceImpl implements WarehouseService {
         OrderBooking orderBooking = orderBookingRepository.findById(request.getOrderId())
                 .orElseThrow(() -> new OrderBookingNotFoundException("Для данного заказа не найдено бронирование"));
 
+        log.info("Передаём заказ {} в доставку", request.getOrderId());
+
         orderBooking.setDeliveryId(request.getDeliveryId());
     }
 

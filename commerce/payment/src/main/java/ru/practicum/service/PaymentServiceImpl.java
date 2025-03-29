@@ -2,11 +2,14 @@ package ru.practicum.service;
 
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.slf4j.ILoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.order.OrderDto;
 import ru.practicum.dto.payment.PaymentDto;
 import ru.practicum.dto.store.ProductDto;
+import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.NoPaymentFoundException;
 import ru.practicum.feign_client.OrderClient;
 import ru.practicum.feign_client.exception.order.NoOrderFoundException;
@@ -22,6 +25,7 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -38,6 +42,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new NotEnoughInfoInOrderToCalculateException("Для оплаты не хватает информации в заказе");
         }
 
+        log.info("Отправляем заказ {} на оплату", orderDto.getOrderId());
         return PaymentMapper.mapToDto(paymentRepository.save(PaymentMapper.mapToPayment(orderDto)));
     }
 
@@ -50,10 +55,12 @@ public class PaymentServiceImpl implements PaymentService {
                 throw new NotEnoughInfoInOrderToCalculateException("Список продуктов не может быть пустым");
             }
 
+            log.info("Запрашиваем стоимость продуктов из shopping-store");
             Map<UUID, Float> productsPrice = products.keySet().stream()
                     .map(storeClient::getProductById)
                     .collect(Collectors.toMap(ProductDto::getProductId, ProductDto::getPrice));
 
+            log.info("Считаем стоимость всех продуктов");
             return products.entrySet().stream()
                     .map(entry -> entry.getValue() * productsPrice.get(entry.getKey()))
                     .mapToDouble(Float::floatValue)
@@ -73,6 +80,7 @@ public class PaymentServiceImpl implements PaymentService {
             throw new NotEnoughInfoInOrderToCalculateException("Не посчитана цена продуктов в заказе или цена доставки");
         }
 
+        log.info("Считаем полную стоимость заказа");
         return orderDto.getProductPrice() * 1.1 + orderDto.getDeliveryPrice();
     }
 
@@ -82,9 +90,11 @@ public class PaymentServiceImpl implements PaymentService {
         Payment oldPayment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NoPaymentFoundException("Сведений об оплате не найдено"));
 
+        log.info("Меняес статус оплаты на {}", PaymentState.SUCCESS);
         oldPayment.setState(PaymentState.SUCCESS);
 
-        // вызвать изменение в сервисе заказов - статус оплачен
+        log.info("Запрос на смену статуса заказа на {}", OrderState.PAID);
+        orderClient.payOrder(oldPayment.getOrderId());
     }
 
     @Override
@@ -93,9 +103,11 @@ public class PaymentServiceImpl implements PaymentService {
         Payment oldPayment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new NoPaymentFoundException("Сведений об оплате не найдено"));
 
+        log.info("Меняем статус оплаты на {}", PaymentState.FAILED);
         oldPayment.setState(PaymentState.FAILED);
 
         try {
+            log.info("Запрос на смену статуса заказа на {}", OrderState.PAYMENT_FAILED);
             orderClient.payOrderFailed(oldPayment.getOrderId());
         } catch (FeignException e) {
             if (e.status() == 404) {

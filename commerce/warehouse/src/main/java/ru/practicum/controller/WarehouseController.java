@@ -59,6 +59,7 @@ public class WarehouseController {
 
     @PostMapping("/return")
     public void returnProducts(@RequestBody Map<UUID, Long> products) {
+        log.info("Запрос на возврат продуктов {} на склад", products);
         service.returnProducts(products);
     }
 }

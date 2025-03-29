@@ -10,7 +10,7 @@ public interface DeliveryService {
 
     Double calculateDeliveryCost(OrderDto orderDto);
 
-    void changeStateToInProgress(UUID deliveryId);
+    void sendProductsToDelivery(UUID deliveryId);
 
     void changeStateToDelivered(UUID deliveryId);
 
