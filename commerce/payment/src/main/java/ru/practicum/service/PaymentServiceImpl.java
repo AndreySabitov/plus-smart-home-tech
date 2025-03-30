@@ -91,8 +91,14 @@ public class PaymentServiceImpl implements PaymentService {
         log.info("Меняес статус оплаты на {}", PaymentState.SUCCESS);
         oldPayment.setState(PaymentState.SUCCESS);
 
-        log.info("Запрос на смену статуса заказа на {}", OrderState.PAID);
-        orderClient.payOrder(oldPayment.getOrderId());
+        try {
+            log.info("Запрос на смену статуса заказа на {}", OrderState.PAID);
+            orderClient.payOrder(oldPayment.getOrderId());
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new NoOrderFoundException(e.getMessage());
+            }
+        }
     }
 
     @Override

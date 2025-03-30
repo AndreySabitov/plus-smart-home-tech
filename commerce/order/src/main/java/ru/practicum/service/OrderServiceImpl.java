@@ -18,11 +18,13 @@ import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.AuthorizationException;
 import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
+import ru.practicum.feign_client.CartClient;
 import ru.practicum.feign_client.DeliveryClient;
 import ru.practicum.feign_client.PaymentClient;
 import ru.practicum.feign_client.WarehouseClient;
 import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
+import ru.practicum.feign_client.exception.shopping_cart.NotFoundShoppingCartException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
@@ -49,6 +51,7 @@ public class OrderServiceImpl implements OrderService {
     private final WarehouseClient warehouseClient;
     private final PaymentClient paymentClient;
     private final DeliveryClient deliveryClient;
+    private final CartClient cartClient;
 
     @Override
     @Transactional
@@ -59,7 +62,20 @@ public class OrderServiceImpl implements OrderService {
             throw new ValidationException("Для оформления заказа нужно добавить хотябы 1 товар в корзину");
         }
 
+        if (createOrderRequest.getShoppingCart().getProducts().values().stream().anyMatch(q -> q == 0)) {
+            throw new ValidationException("Количество товаров в корзине не может быть = 0");
+        }
+
         log.info("Создаём заказ для корзины с id = {}", createOrderRequest.getShoppingCart().getShoppingCartId());
+        try {
+            log.info("Декативируем корзину пользователя {} в сервисе shopping-cart", username);
+            cartClient.deactivateCart(username);
+        } catch (FeignException e) {
+            if (e.status() == 404) {
+                throw new NotFoundShoppingCartException(e.getMessage());
+            }
+        }
+
         try {
             log.info("Проверяем наличие товаров на складе");
             BookedProductsDto bookedProducts = warehouseClient
@@ -103,13 +119,17 @@ public class OrderServiceImpl implements OrderService {
             throw new ValidationException("Добавьте товары для возврата");
         }
 
-        log.info("Возврат товаров {} из заказа orderId = {}", returnRequest.getProducts(), returnRequest.getOrderId());
         Order oldOrder = getOrder(returnRequest.getOrderId());
 
         if (oldOrder.getState() == OrderState.PRODUCT_RETURNED || oldOrder.getState() == OrderState.CANCELED) {
             throw new ValidationException("Заказ уже был возвращён или отменён");
         }
 
+        if (oldOrder.getState() == OrderState.NEW) {
+            throw new ValidationException("Заказ ещё не был собран на складе");
+        }
+
+        log.info("Возврат товаров {} из заказа orderId = {}", returnRequest.getProducts(), returnRequest.getOrderId());
         Map<UUID, Long> orderProducts = oldOrder.getProducts();
         Map<UUID, Long> returnProducts = returnRequest.getProducts();
 
@@ -300,6 +320,10 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto sendOrderToAssembly(UUID orderId) {
         Order oldOrder = getOrder(orderId);
+
+        if (oldOrder.getState() != OrderState.NEW) {
+            throw new ValidationException("Нельзя отправить на сборку не новый заказ");
+        }
 
         try {
             log.info("Отправляем запрос на сборку заказа {} на складе", orderId);

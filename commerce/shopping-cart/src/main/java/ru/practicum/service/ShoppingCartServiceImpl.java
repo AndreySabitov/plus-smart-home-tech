@@ -9,7 +9,7 @@ import ru.practicum.dto.cart.ChangeProductQuantityRequest;
 import ru.practicum.dto.cart.ShoppingCartDto;
 import ru.practicum.exceptions.NoProductsInShoppingCartException;
 import ru.practicum.exceptions.NotAuthorizedUserException;
-import ru.practicum.exceptions.NotFoundShoppingCartException;
+import ru.practicum.feign_client.exception.shopping_cart.NotFoundShoppingCartException;
 import ru.practicum.feign_client.WarehouseClient;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;

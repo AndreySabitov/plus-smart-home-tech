@@ -62,9 +62,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("Рассчитываем стоимость доставки для заказа orderId = {}", orderDto.getOrderId());
         double baseCost = 5.0;
         AddressDto warehouseAddress = AddressMapper.mapToDto(delivery.getFromAddress());
-        if (warehouseAddress.getStreet().equals("ADDRESS_2")) {
+        if (warehouseAddress.getStreet().equals("ADDRESS_2") && warehouseAddress.getCity().equals("ADDRESS_2") &&
+                warehouseAddress.getCountry().equals("ADDRESS_2")) {
             baseCost = baseCost + baseCost * 2;
-        } else if (warehouseAddress.getStreet().equals("ADDRESS_1")) {
+        } else if (warehouseAddress.getStreet().equals("ADDRESS_1") &&
+                warehouseAddress.getCity().equals("ADDRESS_1") &&
+                warehouseAddress.getCountry().equals("ADDRESS_1")) {
             baseCost = baseCost * 2;
         }
         if (orderDto.getFragile()) {

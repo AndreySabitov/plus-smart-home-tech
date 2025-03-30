@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import ru.practicum.exceptions.NoProductsInShoppingCartException;
 import ru.practicum.exceptions.NotAuthorizedUserException;
-import ru.practicum.exceptions.NotFoundShoppingCartException;
+import ru.practicum.feign_client.exception.shopping_cart.NotFoundShoppingCartException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.warehouse.ProductNotFoundInWarehouseException;
 import ru.practicum.feign_client.exception.warehouse.WarehouseServerUnavailable;
