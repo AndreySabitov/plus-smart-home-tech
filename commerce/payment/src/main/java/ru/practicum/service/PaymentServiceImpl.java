@@ -3,6 +3,7 @@ package ru.practicum.service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.order.OrderDto;
@@ -33,6 +34,9 @@ public class PaymentServiceImpl implements PaymentService {
     private final StoreClient storeClient;
     private final OrderClient orderClient;
 
+    @Value("${payment.fee_ratio}")
+    private Double feeRatio;
+
     @Override
     @Transactional
     public PaymentDto makingPaymentForOrder(OrderDto orderDto) {
@@ -41,7 +45,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         log.info("Отправляем заказ {} на оплату", orderDto.getOrderId());
-        return PaymentMapper.mapToDto(paymentRepository.save(PaymentMapper.mapToPayment(orderDto)));
+        return PaymentMapper.mapToDto(paymentRepository.save(PaymentMapper.mapToPayment(orderDto)), feeRatio);
     }
 
     @Override
@@ -74,12 +78,13 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Double calculateTotalCost(OrderDto orderDto) {
-        if (orderDto.getProductPrice() == null || orderDto.getDeliveryPrice() == null) {
+        Double productsPrice = orderDto.getProductPrice();
+        if (productsPrice == null || orderDto.getDeliveryPrice() == null) {
             throw new NotEnoughInfoInOrderToCalculateException("Не посчитана цена продуктов в заказе или цена доставки");
         }
 
         log.info("Считаем полную стоимость заказа");
-        return orderDto.getProductPrice() * 1.1 + orderDto.getDeliveryPrice();
+        return productsPrice + productsPrice * feeRatio + orderDto.getDeliveryPrice();
     }
 
     @Override
@@ -97,6 +102,8 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new NoOrderFoundException(e.getMessage());
+            } else {
+                throw e;
             }
         }
     }
@@ -116,6 +123,8 @@ public class PaymentServiceImpl implements PaymentService {
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new NoOrderFoundException(e.getMessage());
+            } else {
+                throw e;
             }
         }
     }

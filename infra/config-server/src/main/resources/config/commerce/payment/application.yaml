@@ -16,3 +16,6 @@ spring:
     url: jdbc:postgresql://localhost:6432/commerce_payment
     username: postgres
     password: password
+
+payment:
+  fee_ratio: 0.1

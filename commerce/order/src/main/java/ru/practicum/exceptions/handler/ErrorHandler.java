@@ -88,10 +88,4 @@ public class ErrorHandler {
     public ErrorResponse handleMethodArgumentNotValid(final MethodArgumentNotValidException e) {
         return new ErrorResponse(e.getMessage());
     }
-
-    @ExceptionHandler
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ErrorResponse handleNotFoundShoppingCart(final NotFoundShoppingCartException e) {
-        return new ErrorResponse(e.getMessage());
-    }
 }

@@ -51,7 +51,6 @@ public class OrderServiceImpl implements OrderService {
     private final WarehouseClient warehouseClient;
     private final PaymentClient paymentClient;
     private final DeliveryClient deliveryClient;
-    private final CartClient cartClient;
 
     @Override
     @Transactional
@@ -67,14 +66,6 @@ public class OrderServiceImpl implements OrderService {
         }
 
         log.info("Создаём заказ для корзины с id = {}", createOrderRequest.getShoppingCart().getShoppingCartId());
-        try {
-            log.info("Декативируем корзину пользователя {} в сервисе shopping-cart", username);
-            cartClient.deactivateCart(username);
-        } catch (FeignException e) {
-            if (e.status() == 404) {
-                throw new NotFoundShoppingCartException(e.getMessage());
-            }
-        }
 
         try {
             log.info("Проверяем наличие товаров на складе");
@@ -152,6 +143,8 @@ public class OrderServiceImpl implements OrderService {
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new ProductNotFoundInWarehouseException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 
@@ -190,6 +183,8 @@ public class OrderServiceImpl implements OrderService {
         } catch (FeignException e) {
             if (e.status() == 400) {
                 throw new NotEnoughInfoInOrderToCalculateException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 
@@ -232,6 +227,8 @@ public class OrderServiceImpl implements OrderService {
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new OrderBookingNotFoundException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 
@@ -283,6 +280,8 @@ public class OrderServiceImpl implements OrderService {
                 throw new NotEnoughInfoInOrderToCalculateException(e.getMessage());
             } else if (e.status() == 404) {
                 throw new ProductNotFoundException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 
@@ -310,6 +309,8 @@ public class OrderServiceImpl implements OrderService {
         } catch (FeignException e) {
             if (e.status() == 400) {
                 throw new ValidationException("Не задан id доставки");
+            } else {
+                throw e;
             }
         }
 
@@ -336,6 +337,8 @@ public class OrderServiceImpl implements OrderService {
                 throw new ProductNotFoundInWarehouseException(e.getMessage());
             } else if (e.status() == 400) {
                 throw new ProductInShoppingCartLowQuantityInWarehouseException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 

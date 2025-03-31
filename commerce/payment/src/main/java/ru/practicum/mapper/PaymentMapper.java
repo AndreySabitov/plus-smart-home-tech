@@ -19,10 +19,10 @@ public class PaymentMapper {
                 .build();
     }
 
-    public PaymentDto mapToDto(Payment payment) {
+    public PaymentDto mapToDto(Payment payment, Double feeRatio) {
         return PaymentDto.builder()
                 .deliveryTotal(payment.getDeliveryTotal())
-                .feeTotal(payment.getProductsTotal() * 0.1)
+                .feeTotal(payment.getProductsTotal() * feeRatio)
                 .paymentId(payment.getPaymentId())
                 .totalPayment(payment.getTotalPayment())
                 .build();

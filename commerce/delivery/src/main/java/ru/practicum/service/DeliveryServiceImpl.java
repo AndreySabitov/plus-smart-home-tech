@@ -3,6 +3,7 @@ package ru.practicum.service;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.dto.delivery.DeliveryDto;
@@ -35,6 +36,19 @@ public class DeliveryServiceImpl implements DeliveryService {
     private final OrderClient orderClient;
     private final WarehouseClient warehouseClient;
 
+    @Value("${delivery.base_cost}")
+    private Double baseCost;
+    @Value("${delivery.warehouse_address_ratio}")
+    private Integer warehouseAddressRatio;
+    @Value("${delivery.fragile_ratio}")
+    private Double fragileRatio;
+    @Value("${delivery.weight_ratio}")
+    private Double weightRatio;
+    @Value("${delivery.volume_ratio}")
+    private Double volumeRatio;
+    @Value("${delivery.delivery_address_ratio}")
+    private Double deliveryAddressRatio;
+
     @Override
     @Transactional
     public DeliveryDto createNewDelivery(DeliveryDto deliveryDto) {
@@ -60,30 +74,30 @@ public class DeliveryServiceImpl implements DeliveryService {
         delivery.setFragile(orderDto.getFragile());
 
         log.info("Рассчитываем стоимость доставки для заказа orderId = {}", orderDto.getOrderId());
-        double baseCost = 5.0;
+        double result = baseCost;
         AddressDto warehouseAddress = AddressMapper.mapToDto(delivery.getFromAddress());
         if (warehouseAddress.getStreet().equals("ADDRESS_2") && warehouseAddress.getCity().equals("ADDRESS_2") &&
                 warehouseAddress.getCountry().equals("ADDRESS_2")) {
-            baseCost = baseCost + baseCost * 2;
+            result = result + result * warehouseAddressRatio;
         } else if (warehouseAddress.getStreet().equals("ADDRESS_1") &&
                 warehouseAddress.getCity().equals("ADDRESS_1") &&
                 warehouseAddress.getCountry().equals("ADDRESS_1")) {
-            baseCost = baseCost * 2;
+            result += result;
         }
         if (orderDto.getFragile()) {
-            baseCost = baseCost + baseCost * 0.2;
+            result = result + result * fragileRatio;
         }
-        baseCost = baseCost + orderDto.getDeliveryWeight() * 0.3;
-        baseCost = baseCost + orderDto.getDeliveryVolume() * 0.2;
+        result = result + orderDto.getDeliveryWeight() * weightRatio;
+        result = result + orderDto.getDeliveryVolume() * volumeRatio;
         Address deliveryAddress = delivery.getToAddress();
         if (!deliveryAddress.getStreet().equals(warehouseAddress.getStreet()) &&
                 !deliveryAddress.getCity().equals(warehouseAddress.getCity()) &&
                 !deliveryAddress.getCountry().equals(warehouseAddress.getCountry())) {
-            baseCost = baseCost + baseCost * 0.2;
+            result = result + result * deliveryAddressRatio;
         }
-        log.info("Получили стоимость доставки = {}", baseCost);
+        log.info("Получили стоимость доставки = {}", result);
 
-        return baseCost;
+        return result;
     }
 
     @Override
@@ -100,6 +114,8 @@ public class DeliveryServiceImpl implements DeliveryService {
         } catch (FeignException e) {
             if (e.status() == 404) {
                 throw new OrderBookingNotFoundException(e.getMessage());
+            } else {
+                throw e;
             }
         }
 

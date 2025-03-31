@@ -16,3 +16,11 @@ spring:
     url: jdbc:postgresql://localhost:6432/commerce_delivery
     username: postgres
     password: password
+
+delivery:
+  base_cost: 5.0
+  warehouse_address_ratio: 2
+  fragile_ratio: 0.2
+  weight_ratio: 0.3
+  volume_ratio: 0.2
+  delivery_address_ratio: 0.2
