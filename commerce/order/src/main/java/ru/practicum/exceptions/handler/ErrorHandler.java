@@ -11,7 +11,6 @@ import ru.practicum.exceptions.NoProductInOrderException;
 import ru.practicum.exceptions.ValidationException;
 import ru.practicum.feign_client.exception.order.NoOrderFoundException;
 import ru.practicum.feign_client.exception.payment.NotEnoughInfoInOrderToCalculateException;
-import ru.practicum.feign_client.exception.shopping_cart.NotFoundShoppingCartException;
 import ru.practicum.feign_client.exception.shopping_cart.ProductInShoppingCartLowQuantityInWarehouseException;
 import ru.practicum.feign_client.exception.shopping_store.ProductNotFoundException;
 import ru.practicum.feign_client.exception.warehouse.OrderBookingNotFoundException;
