@@ -53,10 +53,6 @@ public class PaymentServiceImpl implements PaymentService {
         try {
             Map<UUID, Long> products = orderDto.getProducts();
 
-            if (products.isEmpty()) {
-                throw new NotEnoughInfoInOrderToCalculateException("Список продуктов не может быть пустым");
-            }
-
             log.info("Запрашиваем стоимость продуктов из shopping-store");
             Map<UUID, Float> productsPrice = products.keySet().stream()
                     .map(storeClient::getProductById)

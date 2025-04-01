@@ -2,7 +2,6 @@ package ru.practicum.mapper;
 
 import lombok.experimental.UtilityClass;
 import ru.practicum.dto.delivery.DeliveryDto;
-import ru.practicum.enums.delivery.DeliveryState;
 import ru.practicum.model.Address;
 import ru.practicum.model.Delivery;
 
@@ -11,7 +10,7 @@ public class DeliveryMapper {
 
     public Delivery mapToDelivery(DeliveryDto deliveryDto, Address fromAddress, Address toAddress) {
         return Delivery.builder()
-                .state(DeliveryState.CREATED)
+                .state(deliveryDto.getState())
                 .fromAddress(fromAddress)
                 .orderId(deliveryDto.getOrderId())
                 .toAddress(toAddress)

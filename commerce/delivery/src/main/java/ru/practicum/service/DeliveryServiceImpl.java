@@ -49,6 +49,9 @@ public class DeliveryServiceImpl implements DeliveryService {
     @Value("${delivery.delivery_address_ratio}")
     private Double deliveryAddressRatio;
 
+    private static final String FIRST_ADDRESS = "ADDRESS_1";
+    private static final String SECOND_ADDRESS = "ADDRESS_2";
+
     @Override
     @Transactional
     public DeliveryDto createNewDelivery(DeliveryDto deliveryDto) {
@@ -76,12 +79,12 @@ public class DeliveryServiceImpl implements DeliveryService {
         log.info("Рассчитываем стоимость доставки для заказа orderId = {}", orderDto.getOrderId());
         double result = baseCost;
         AddressDto warehouseAddress = AddressMapper.mapToDto(delivery.getFromAddress());
-        if (warehouseAddress.getStreet().equals("ADDRESS_2") && warehouseAddress.getCity().equals("ADDRESS_2") &&
-                warehouseAddress.getCountry().equals("ADDRESS_2")) {
+        if (warehouseAddress.getStreet().equals(SECOND_ADDRESS) && warehouseAddress.getCity().equals(SECOND_ADDRESS) &&
+                warehouseAddress.getCountry().equals(SECOND_ADDRESS)) {
             result = result + result * warehouseAddressRatio;
-        } else if (warehouseAddress.getStreet().equals("ADDRESS_1") &&
-                warehouseAddress.getCity().equals("ADDRESS_1") &&
-                warehouseAddress.getCountry().equals("ADDRESS_1")) {
+        } else if (warehouseAddress.getStreet().equals(FIRST_ADDRESS) &&
+                warehouseAddress.getCity().equals(FIRST_ADDRESS) &&
+                warehouseAddress.getCountry().equals(FIRST_ADDRESS)) {
             result += result;
         }
         if (orderDto.getFragile()) {

@@ -21,5 +21,6 @@ public class DeliveryDto {
     AddressDto toAddress;
     @NotNull
     UUID orderId;
+    @NotNull
     DeliveryState state;
 }

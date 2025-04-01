@@ -14,6 +14,7 @@ import ru.practicum.dto.order.ProductReturnRequest;
 import ru.practicum.dto.payment.PaymentDto;
 import ru.practicum.dto.warehouse.AssemblyProductsForOrderRequest;
 import ru.practicum.dto.warehouse.BookedProductsDto;
+import ru.practicum.enums.delivery.DeliveryState;
 import ru.practicum.enums.order.OrderState;
 import ru.practicum.exceptions.AuthorizationException;
 import ru.practicum.exceptions.NoProductInOrderException;
@@ -54,14 +55,6 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     public OrderDto createNewOrder(CreateNewOrderRequest createOrderRequest, String username) {
         checkUsername(username);
-
-        if (createOrderRequest.getShoppingCart().getProducts().isEmpty()) {
-            throw new ValidationException("Для оформления заказа нужно добавить хотябы 1 товар в корзину");
-        }
-
-        if (createOrderRequest.getShoppingCart().getProducts().values().stream().anyMatch(q -> q == 0)) {
-            throw new ValidationException("Количество товаров в корзине не может быть = 0");
-        }
 
         log.info("Создаём заказ для корзины с id = {}", createOrderRequest.getShoppingCart().getShoppingCartId());
 
@@ -297,6 +290,7 @@ public class OrderServiceImpl implements OrderService {
                     .orderId(orderId)
                     .fromAddress(warehouseClient.getWarehouseAddress())
                     .toAddress(AddressMapper.mapToDto(oldOrder.getDeliveryAddress()))
+                    .state(DeliveryState.CREATED)
                     .build());
 
             oldOrder.setDeliveryId(deliveryDto.getDeliveryId());

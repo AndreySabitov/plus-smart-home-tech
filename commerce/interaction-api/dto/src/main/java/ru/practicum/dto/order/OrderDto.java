@@ -1,6 +1,8 @@
 package ru.practicum.dto.order;
 
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Positive;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +20,8 @@ public class OrderDto {
     UUID orderId;
     UUID shoppingCartId;
     @NotNull
-    Map<UUID, Long> products;
+    @NotEmpty
+    Map<@NotNull UUID, @NotNull @Positive Long> products;
     UUID paymentId;
     UUID deliveryId;
     OrderState state;
