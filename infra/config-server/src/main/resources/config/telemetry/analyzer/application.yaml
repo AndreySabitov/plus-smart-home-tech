@@ -34,7 +34,7 @@ spring:
 grpc:
   client:
     hub-router:
-      address: discovery://hub-router
+      address: 'discovery:///hub-router'
       enableKeepAlive: true
       keepAliveWithoutCalls: true
       negotiationType: plaintext
